@@ -1,17 +1,18 @@
 package com.rangr
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -26,7 +27,7 @@ import com.mapbox.maps.extension.style.sources.generated.rasterDemSource
 import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.extension.style.terrain.generated.terrain
 
-class MainActivity : ComponentActivity() {
+class MapActivity : ComponentActivity() {
     private lateinit var mapView: MapView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +75,14 @@ class MainActivity : ComponentActivity() {
     fun MainScreen(mapView: MapView) {
         Box(modifier = Modifier.fillMaxSize()) {
             MapViewContainer(mapView)
-            MapStyleButton()
+            Column(modifier = Modifier.padding(16.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                MapStyleButton()
+                Spacer(modifier = Modifier.height(8.dp))
+                Toggle3dButton(mapView)
+                Spacer(modifier = Modifier.height(8.dp))
+                LocateUserButton(mapView)
+            }
             // Positioning the BottomAppBar at the bottom of the screen
 //            BottomAppBar {
 //                // Map button
@@ -112,20 +120,16 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun Toggle3dButton() {
-        // Style Toggle Button
-        Box() {
-            var is3d by remember { mutableStateOf(false) }
-            FloatingActionButton(
-                onClick = {
-                    isSatelliteStyle = !isSatelliteStyle
-                    setMapStyle(
-                        if (isSatelliteStyle) Style.SATELLITE else Style.OUTDOORS
-                    )
-                },
-                modifier = Modifier.align(Alignment.BottomEnd),
-                content = { Icon(Icons.Filled.Menu, contentDescription = "Change Style") }
-            )
+    fun Toggle3dButton(mapView: MapView) {
+        FloatingActionButton(onClick = {}) {
+            Icon(Icons.Filled.Star, contentDescription = "Toggle 3D viewing")
+        }
+    }
+
+    @Composable
+    fun LocateUserButton(mapView: MapView) {
+        FloatingActionButton(onClick = {}) {
+            Icon(Icons.Filled.AccountCircle, contentDescription = "Locate User")
         }
     }
 
