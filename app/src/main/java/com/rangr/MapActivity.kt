@@ -1,6 +1,7 @@
 package com.rangr
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.android.gestures.MoveGestureDetector
+import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -223,7 +225,35 @@ class MapActivity : ComponentActivity() {
 
     @Composable
     fun LocateUserButton(mapView: MapView) {
-        FloatingActionButton(onClick = {}) {
+        FloatingActionButton(onClick = {
+
+
+            val locationService: LocationService = LocationServiceFactory.getOrCreate()
+            var locationProvider: DeviceLocationProvider? = null
+
+            val request = LocationProviderRequest.Builder()
+                .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
+                .displacement(0F)
+                .accuracy(AccuracyLevel.HIGHEST)
+                .build();
+
+            val result = locationService.getDeviceLocationProvider(request)
+            if (result.isValue) {
+                locationProvider = result.value!!
+            } else {
+            }
+            locationProvider?.getLastLocation { lastLocation ->
+                lastLocation?.let {
+                    // Scroll the map to the user's location
+                    mapView.mapboxMap.setCamera(
+                        CameraOptions.Builder()
+                            .center(Point.fromLngLat(it.longitude, it.latitude))
+                            .zoom(14.0) // Adjust the zoom level as needed
+                            .build()
+                    )
+                }
+            }
+        }) {
             Icon(Icons.Filled.AccountCircle, contentDescription = "Locate User")
         }
     }
