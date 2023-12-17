@@ -1,13 +1,12 @@
 package com.rangr
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
@@ -15,17 +14,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
+import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.addLayerBelow
+import com.mapbox.maps.extension.style.layers.generated.rasterLayer
+import com.mapbox.maps.extension.style.light.Light
+import com.mapbox.maps.extension.style.sources.addSource
+import com.mapbox.maps.extension.style.sources.generated.rasterSource
 import java.lang.ref.WeakReference
 
 class MapActivity : ComponentActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
     private lateinit var mapView: MapView
     private lateinit var mapController: MapboxController
+
+    private var hasRotationEnabled: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -34,6 +43,7 @@ class MapActivity : ComponentActivity() {
 
         mapController.ScrollToLocation(168.0, -44.7)
         mapController.SetMapStyle(Style.OUTDOORS)
+        mapController.SetMapRotation(hasRotationEnabled)
 
         setContent { MainScreen(mapView = mapView) }
 
@@ -61,6 +71,10 @@ class MapActivity : ComponentActivity() {
                 Toggle3dButton(mapView)
                 Spacer(modifier = Modifier.height(8.dp))
                 LocateUserButton(mapView)
+                Spacer(modifier = Modifier.height(8.dp))
+                ToggleRotateButton()
+                Spacer(modifier = Modifier.height(8.dp))
+                EnableMarineMode()
             }
             // Positioning the BottomAppBar at the bottom of the screen
 //            BottomAppBar {
@@ -78,6 +92,54 @@ class MapActivity : ComponentActivity() {
 //                }
 //            }
         }
+    }
+
+    @Composable
+    private fun ToggleRotateButton() {
+        Box {
+            FloatingActionButton(onClick = {
+                hasRotationEnabled = !hasRotationEnabled
+                mapController.SetMapRotation(hasRotationEnabled)
+                ShowToast()
+            },
+                modifier = Modifier.align(Alignment.TopEnd),
+                content = { Icon(Icons.Filled.Refresh, contentDescription = "Toggle rotation") })
+        }
+    }
+
+    @Composable
+    private fun EnableMarineMode() {
+        Box {
+            FloatingActionButton(onClick = {
+                hasRotationEnabled = !hasRotationEnabled
+                mapController.SetMapRotation(hasRotationEnabled)
+
+                var apiKey = ""
+
+                mapView.mapboxMap.loadStyle(Style.DARK) {
+                    it.addSource(
+                        rasterSource("LINZ_MARINE") {
+                            tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4758/EPSG:3857/{z}/{x}/{y}.png"))
+                            tileSize(128)
+                            minzoom(2)
+                            maxzoom(18)
+                        }
+                    )
+                    it.addLayer(
+                        rasterLayer("LINZ_MARINE_LAYER", "LINZ_MARINE") {
+                            sourceLayer("LINZ_MARINE")
+                        },
+                    )
+                }
+            },
+                modifier = Modifier.align(Alignment.TopEnd),
+                content = { Icon(Icons.Filled.Build, contentDescription = "Toggle rotation") })
+        }
+    }
+
+    private fun ShowToast() {
+        val text = if (hasRotationEnabled) "Map rotation enabled" else "Map rotation disabled"
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
 
     @Composable
@@ -103,9 +165,12 @@ class MapActivity : ComponentActivity() {
 
     @Composable
     fun Toggle3dButton(mapView: MapView) {
+        var is3d by remember { mutableStateOf(false) }
+
         FloatingActionButton(onClick = {
-            mapController.ScrollToLocation(169.0, -45.0)
-            mapController.SetCameraPitch(30.0)
+            is3d = !is3d
+
+            mapController.SetCameraPitch(if (is3d) 30.0 else 0.0)
         }) {
             Icon(Icons.Filled.Star, contentDescription = "Toggle 3D viewing")
         }

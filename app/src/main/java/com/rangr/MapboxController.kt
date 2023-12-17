@@ -23,7 +23,6 @@ import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 
 class MapboxController(private val mapView: MapView) {
-
     private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
         mapView.mapboxMap.setCamera(CameraOptions.Builder().bearing(it).build())
     }
@@ -72,12 +71,17 @@ class MapboxController(private val mapView: MapView) {
         mapView.mapboxMap.setCamera(
             CameraOptions.Builder().zoom(14.0).build()
         )
+
         mapView.mapboxMap.loadStyle(
             Style.STANDARD
         ) {
             initLocationComponent()
             setupGesturesListener()
         }
+    }
+
+    fun SetMapRotation(enabled: Boolean) {
+        mapView.gestures.rotateEnabled = enabled
     }
 
     fun onDestroy() {
