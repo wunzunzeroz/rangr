@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.common.location.*
@@ -63,26 +65,32 @@ class MapActivity : ComponentActivity() {
         val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         val coroutineScope = rememberCoroutineScope()
 
-        ModalBottomSheetLayout(
-            sheetState = sheetState,
-            sheetContent = {
-                BottomSheetContent()
-            }
-        ) {
+        ModalBottomSheetLayout(sheetState = sheetState, sheetContent = {
+            BottomSheetContent()
+        }) {
             Box(modifier = Modifier.fillMaxSize()) {
                 MapViewContainer(mapView)
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    FloatingActionButton(onClick = {
-                        coroutineScope.launch {
-                            if (sheetState.isVisible) {
-                                sheetState.hide()
-                            } else {
-                                sheetState.show()
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                if (sheetState.isVisible) {
+                                    sheetState.hide()
+                                } else {
+                                    sheetState.show()
+                                }
                             }
-                        }
-                    }) {
-                        Icon(Icons.Filled.Layers, contentDescription = "Show bottom sheet")
+
+                        },
+                        shape = CircleShape,
+                        modifier = Modifier.size(width = 55.dp, height = 55.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = Color(0xFFFF4F00),
+                            backgroundColor = Color.Black
+                        )
+                    ) {
+                        Icon(Icons.Filled.Layers, tint = Color(0xFFFF4F00), contentDescription = "Show bottom sheet")
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     LocateUserButton(mapView)
@@ -131,8 +139,7 @@ class MapActivity : ComponentActivity() {
                     }
                 }
 
-            },
-            modifier = Modifier
+            }, modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
@@ -143,13 +150,26 @@ class MapActivity : ComponentActivity() {
     @Composable
     private fun ToggleRotateButton() {
         Box {
-            FloatingActionButton(onClick = {
-                hasRotationEnabled = !hasRotationEnabled
-                mapController.SetMapRotation(hasRotationEnabled)
-                ShowToast()
-            },
-                modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.Refresh, contentDescription = "Toggle rotation") })
+            Button(
+                onClick = {
+                    hasRotationEnabled = !hasRotationEnabled
+                    mapController.SetMapRotation(hasRotationEnabled)
+                    ShowToast()
+                },
+                content = {
+                    Icon(
+                        Icons.Filled.Refresh,
+                        tint = Color(0xFFFF4F00),
+                        contentDescription = "Toggle rotation"
+                    )
+                },
+                shape = CircleShape,
+                modifier = Modifier.size(width = 55.dp, height = 55.dp),
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = Color(0xFFFF4F00),
+                    backgroundColor = Color.Black
+                ),
+            )
         }
     }
 
@@ -216,33 +236,39 @@ class MapActivity : ComponentActivity() {
 
     @Composable
     fun LocateUserButton(mapView: MapView) {
-        FloatingActionButton(onClick = {
+        Button(
+            onClick = {
+                val locationService: LocationService = LocationServiceFactory.getOrCreate()
+                var locationProvider: DeviceLocationProvider? = null
 
+                val request = LocationProviderRequest.Builder()
+                    .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
+                    .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build();
 
-            val locationService: LocationService = LocationServiceFactory.getOrCreate()
-            var locationProvider: DeviceLocationProvider? = null
-
-            val request = LocationProviderRequest.Builder()
-                .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
-                .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build();
-
-            val result = locationService.getDeviceLocationProvider(request)
-            if (result.isValue) {
-                locationProvider = result.value!!
-            } else {
-            }
-            locationProvider?.getLastLocation { lastLocation ->
-                lastLocation?.let {
-                    // Scroll the map to the user's location
-                    mapView.mapboxMap.setCamera(
-                        CameraOptions.Builder().center(Point.fromLngLat(it.longitude, it.latitude))
-                            .zoom(14.0) // Adjust the zoom level as needed
-                            .build()
-                    )
+                val result = locationService.getDeviceLocationProvider(request)
+                if (result.isValue) {
+                    locationProvider = result.value!!
+                } else {
                 }
-            }
-        }) {
-            Icon(Icons.Filled.MyLocation, contentDescription = "Locate User")
+                locationProvider?.getLastLocation { lastLocation ->
+                    lastLocation?.let {
+                        // Scroll the map to the user's location
+                        mapView.mapboxMap.setCamera(
+                            CameraOptions.Builder().center(Point.fromLngLat(it.longitude, it.latitude))
+                                .zoom(14.0) // Adjust the zoom level as needed
+                                .build()
+                        )
+                    }
+                }
+            },
+            shape = CircleShape,
+            modifier = Modifier.size(width = 55.dp, height = 55.dp),
+            colors = ButtonDefaults.buttonColors(
+                contentColor = Color(0xFFFF4F00),
+                backgroundColor = Color.Black
+            ),
+        ) {
+            Icon(Icons.Filled.MyLocation, tint = Color(0xFFFF4F00), contentDescription = "Locate User")
         }
     }
 
