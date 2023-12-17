@@ -61,7 +61,7 @@ class MapboxController(private val mapView: MapView) {
         val topo50Url = "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52343/EPSG:3857/{z}/{x}/{y}.png"
         val topo250Url = "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52324/EPSG:3857/{z}/{x}/{y}.png"
 
-        mapView.mapboxMap.loadStyle(Style.DARK) {
+        mapView.mapboxMap.loadStyle(Style.OUTDOORS) {
             it.addSource(
                 rasterDemSource("TERRAIN_SOURCE") {
                     url(TERRAIN_URL_TILE_RESOURCE)
