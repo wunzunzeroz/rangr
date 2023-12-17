@@ -1,3 +1,5 @@
+import java.util.*
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,12 +9,22 @@ android {
     namespace = "com.rangr"
     compileSdk = 34
 
+
     defaultConfig {
         applicationId = "com.rangr"
         minSdk = 27
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+
+        val appProperties = Properties()
+        val appPropertiesFile = rootProject.file("app.properties")
+        if (appPropertiesFile.exists()) {
+            appProperties.load(appPropertiesFile.inputStream())
+        }
+
+        android.buildFeatures.buildConfig = true
+        buildConfigField("String", "LINZ_API_KEY", "\"${appProperties["LINZ_API_KEY"]}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

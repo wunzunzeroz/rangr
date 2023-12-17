@@ -75,6 +75,8 @@ class MapActivity : ComponentActivity() {
                 ToggleRotateButton()
                 Spacer(modifier = Modifier.height(8.dp))
                 EnableMarineMode()
+                Spacer(modifier = Modifier.height(8.dp))
+                EnableTopoMode()
             }
             // Positioning the BottomAppBar at the bottom of the screen
 //            BottomAppBar {
@@ -108,29 +110,20 @@ class MapActivity : ComponentActivity() {
     }
 
     @Composable
+    private fun EnableTopoMode() {
+        Box {
+            FloatingActionButton(onClick = {
+                mapController.SetTopographicStyle()
+            },
+                modifier = Modifier.align(Alignment.TopEnd),
+                content = { Icon(Icons.Filled.AccountBox, contentDescription = "Toggle rotation") })
+        }
+    }
+    @Composable
     private fun EnableMarineMode() {
         Box {
             FloatingActionButton(onClick = {
-                hasRotationEnabled = !hasRotationEnabled
-                mapController.SetMapRotation(hasRotationEnabled)
-
-                var apiKey = ""
-
-                mapView.mapboxMap.loadStyle(Style.DARK) {
-                    it.addSource(
-                        rasterSource("LINZ_MARINE") {
-                            tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4758/EPSG:3857/{z}/{x}/{y}.png"))
-                            tileSize(128)
-                            minzoom(2)
-                            maxzoom(18)
-                        }
-                    )
-                    it.addLayer(
-                        rasterLayer("LINZ_MARINE_LAYER", "LINZ_MARINE") {
-                            sourceLayer("LINZ_MARINE")
-                        },
-                    )
-                }
+                mapController.SetNauticalStyle()
             },
                 modifier = Modifier.align(Alignment.TopEnd),
                 content = { Icon(Icons.Filled.Build, contentDescription = "Toggle rotation") })
