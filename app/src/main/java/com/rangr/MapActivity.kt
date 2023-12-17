@@ -14,18 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
-import com.mapbox.maps.extension.style.layers.addLayer
-import com.mapbox.maps.extension.style.layers.addLayerBelow
-import com.mapbox.maps.extension.style.layers.generated.rasterLayer
-import com.mapbox.maps.extension.style.light.Light
-import com.mapbox.maps.extension.style.sources.addSource
-import com.mapbox.maps.extension.style.sources.generated.rasterSource
 import java.lang.ref.WeakReference
 
 class MapActivity : ComponentActivity() {
@@ -67,8 +60,8 @@ class MapActivity : ComponentActivity() {
             Column(modifier = Modifier.padding(16.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
                 MapStyleButton()
-                Spacer(modifier = Modifier.height(8.dp))
-                Toggle3dButton(mapView)
+//                Spacer(modifier = Modifier.height(8.dp))
+//                Toggle3dButton(mapView)
                 Spacer(modifier = Modifier.height(8.dp))
                 LocateUserButton(mapView)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -78,21 +71,6 @@ class MapActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(8.dp))
                 EnableTopoMode()
             }
-            // Positioning the BottomAppBar at the bottom of the screen
-//            BottomAppBar {
-//                // Map button
-//                IconButton(onClick = {
-//                    // Code to stay on current activity or refresh the view
-//                }) {
-//                    Icon(Icons.Filled.Home, contentDescription = "Map")
-//                }
-//                // Second Activity button
-//                IconButton(onClick = {
-//                    startActivity(Intent(this@MainActivity, SecondActivity::class.java))
-//                }) {
-//                    Icon(Icons.Filled.Settings, contentDescription = "Settings")
-//                }
-//            }
         }
     }
 
@@ -116,9 +94,10 @@ class MapActivity : ComponentActivity() {
                 mapController.SetTopographicStyle()
             },
                 modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.AccountBox, contentDescription = "Toggle rotation") })
+                content = { Icon(Icons.Filled.Terrain, contentDescription = "Toggle rotation") })
         }
     }
+
     @Composable
     private fun EnableMarineMode() {
         Box {
@@ -126,7 +105,7 @@ class MapActivity : ComponentActivity() {
                 mapController.SetNauticalStyle()
             },
                 modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.Build, contentDescription = "Toggle rotation") })
+                content = { Icon(Icons.Filled.DirectionsBoat, contentDescription = "Toggle rotation") })
         }
     }
 
@@ -147,7 +126,7 @@ class MapActivity : ComponentActivity() {
                 )
             },
                 modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.Menu, contentDescription = "Change Style") })
+                content = { Icon(Icons.Filled.Layers, contentDescription = "Change Style") })
         }
     }
 
@@ -197,7 +176,7 @@ class MapActivity : ComponentActivity() {
                 }
             }
         }) {
-            Icon(Icons.Filled.AccountCircle, contentDescription = "Locate User")
+            Icon(Icons.Filled.MyLocation, contentDescription = "Locate User")
         }
     }
 
