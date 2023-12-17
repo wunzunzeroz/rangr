@@ -17,6 +17,7 @@ import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.rasterDemSource
 import com.mapbox.maps.extension.style.sources.generated.rasterSource
 import com.mapbox.maps.extension.style.style
+import com.mapbox.maps.extension.style.terrain.generated.setTerrain
 import com.mapbox.maps.extension.style.terrain.generated.terrain
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.gestures.OnMoveListener
@@ -62,6 +63,11 @@ class MapboxController(private val mapView: MapView) {
 
         mapView.mapboxMap.loadStyle(Style.DARK) {
             it.addSource(
+                rasterDemSource("TERRAIN_SOURCE") {
+                    url(TERRAIN_URL_TILE_RESOURCE)
+                }
+            )
+            it.addSource(
                 rasterSource("LINZ_TOPO_50") {
                     tiles(listOf(topo50Url))
                     tileSize(128)
@@ -72,6 +78,9 @@ class MapboxController(private val mapView: MapView) {
                     tiles(listOf(topo250Url))
                     tileSize(128)
                 }
+            )
+            it.setTerrain(
+                terrain("TERRAIN_SOURCE")
             )
             it.addLayer(
                 rasterLayer("LINZ_TOPO_250_LAYER", "LINZ_TOPO_250") {
