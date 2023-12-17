@@ -103,12 +103,20 @@ class MapboxController(private val mapView: MapView) {
 
         mapView.mapboxMap.loadStyle(Style.DARK) {
             it.addSource(
+                rasterDemSource("TERRAIN_SOURCE") {
+                    url(TERRAIN_URL_TILE_RESOURCE)
+                }
+            )
+            it.addSource(
                 rasterSource("LINZ_MARINE") {
                     tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4758/EPSG:3857/{z}/{x}/{y}.png"))
                     tileSize(128)
                     minzoom(2)
                     maxzoom(18)
                 }
+            )
+            it.setTerrain(
+                terrain("TERRAIN_SOURCE")
             )
             it.addLayer(
                 rasterLayer("LINZ_MARINE_LAYER", "LINZ_MARINE") {

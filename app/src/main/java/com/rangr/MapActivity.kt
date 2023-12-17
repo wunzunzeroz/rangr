@@ -5,6 +5,9 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.FloatingActionButton
@@ -19,6 +22,7 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class MapActivity : ComponentActivity() {
@@ -53,24 +57,86 @@ class MapActivity : ComponentActivity() {
         locationPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun MainScreen(mapView: MapView) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            MapViewContainer(mapView)
-            Column(modifier = Modifier.padding(16.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                MapStyleButton()
-//                Spacer(modifier = Modifier.height(8.dp))
-//                Toggle3dButton(mapView)
-                Spacer(modifier = Modifier.height(8.dp))
-                LocateUserButton(mapView)
-                Spacer(modifier = Modifier.height(8.dp))
-                ToggleRotateButton()
-                Spacer(modifier = Modifier.height(8.dp))
-                EnableMarineMode()
-                Spacer(modifier = Modifier.height(8.dp))
-                EnableTopoMode()
+        val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+        val coroutineScope = rememberCoroutineScope()
+
+        ModalBottomSheetLayout(
+            sheetState = sheetState,
+            sheetContent = {
+                BottomSheetContent()
             }
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                MapViewContainer(mapView)
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    FloatingActionButton(onClick = {
+                        coroutineScope.launch {
+                            if (sheetState.isVisible) {
+                                sheetState.hide()
+                            } else {
+                                sheetState.show()
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Layers, contentDescription = "Show bottom sheet")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LocateUserButton(mapView)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ToggleRotateButton()
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun BottomSheetContent() {
+        val mapStyles = listOf("STREETS", "OUTDOORS", "SATELLITE", "MARINE", "TOPOGRAPHIC")
+
+        LazyColumn {
+            items(mapStyles) { style ->
+                ListItem(style)
+            }
+        }
+    }
+
+    @Composable
+    fun ListItem(style: String) {
+        TextButton(
+            onClick = {
+                when (style) {
+                    "STREETS" -> {
+                        mapController.SetMapStyle(Style.STANDARD)
+                    }
+
+                    "OUTDOORS" -> {
+                        mapController.SetMapStyle(Style.OUTDOORS)
+                    }
+
+                    "SATELLITE" -> {
+                        mapController.SetMapStyle(Style.SATELLITE_STREETS)
+                    }
+
+                    "MARINE" -> {
+                        mapController.SetNauticalStyle()
+
+                    }
+
+                    "TOPOGRAPHIC" -> {
+                        mapController.SetTopographicStyle()
+                    }
+                }
+
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Text(style, modifier = Modifier.padding(8.dp))
         }
     }
 
