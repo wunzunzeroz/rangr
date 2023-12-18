@@ -1,5 +1,6 @@
 package com.rangr
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -19,11 +20,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.createBitmap
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -31,6 +38,7 @@ class MapActivity : ComponentActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
     private lateinit var mapView: MapView
     private lateinit var mapController: MapboxController
+    private lateinit var pointAnnotationManager: PointAnnotationManager
 
     private var hasRotationEnabled: Boolean = false
 
@@ -43,6 +51,9 @@ class MapActivity : ComponentActivity() {
         mapController.ScrollToLocation(168.0, -44.7)
         mapController.SetMapStyle(Style.OUTDOORS)
         mapController.SetMapRotation(hasRotationEnabled)
+
+        val annotationApi = mapView.annotations
+        pointAnnotationManager = annotationApi.createPointAnnotationManager()
 
         setContent { MainScreen(mapView = mapView) }
 
@@ -59,21 +70,48 @@ class MapActivity : ComponentActivity() {
         locationPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    enum class BottomSheetType {
+        MAP_STYLE_SELECTION,
+        LOCATION_DETAILS
+    }
+
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun MainScreen(mapView: MapView) {
         val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         val coroutineScope = rememberCoroutineScope()
 
-        ModalBottomSheetLayout(sheetState = sheetState, sheetBackgroundColor = Color.Black, sheetContentColor = Color(0xFFFF4F00), sheetContent = {
-            BottomSheetContent()
-        }) {
+        var bottomSheetType by remember { mutableStateOf<BottomSheetType?>(null) }
+        var tappedPoint by remember { mutableStateOf<Point?>(null) }
+
+        ModalBottomSheetLayout(
+            sheetState = sheetState,
+            sheetBackgroundColor = Color.Black,
+            sheetContentColor = Color(0xFFFF4F00),
+            sheetContent = {
+                when (bottomSheetType) {
+                    BottomSheetType.MAP_STYLE_SELECTION -> BottomSheetContent()
+                    BottomSheetType.LOCATION_DETAILS -> LocationDetailsBottomSheet(tappedPoint)
+                    null -> {}
+                }
+            }) {
             Box(modifier = Modifier.fillMaxSize()) {
-                MapViewContainer(mapView)
+                MapViewContainer(mapView, onMapTap = {
+                    tappedPoint = it
+
+                    val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                        .withPoint(it)
+                        .withIconImage(BitmapFactory.decodeResource(resources, R.drawable.red_marker))
+                    pointAnnotationManager.create(pointAnnotationOptions)
+
+                    bottomSheetType = BottomSheetType.LOCATION_DETAILS
+                    coroutineScope.launch { sheetState.show() }
+                })
                 Column(modifier = Modifier.padding(8.dp)) {
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = {
+                            bottomSheetType = BottomSheetType.MAP_STYLE_SELECTION
                             coroutineScope.launch {
                                 if (sheetState.isVisible) {
                                     sheetState.hide()
@@ -99,6 +137,19 @@ class MapActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private @Composable
+    fun LocationDetailsBottomSheet(tappedPoint: Point?) {
+        // Content showing location details
+        if (tappedPoint != null) {
+            Text("Coordinates: ${tappedPoint.latitude()}, ${tappedPoint.longitude()}")
+        }
+    }
+
+    @Composable
+    fun MapStyleSelectButton() {
+
     }
 
     @Composable
@@ -274,9 +325,12 @@ class MapActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MapViewContainer(mapView: MapView) {
+    fun MapViewContainer(mapView: MapView, onMapTap: (Point) -> Unit) {
         AndroidView({ mapView }) { mapView ->
-            mapView.onStart()
+            mapView.mapboxMap.addOnMapClickListener {
+                onMapTap(it)
+                true
+            }
         }
     }
 
