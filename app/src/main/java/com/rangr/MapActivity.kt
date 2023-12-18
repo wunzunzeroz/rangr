@@ -65,7 +65,7 @@ class MapActivity : ComponentActivity() {
         val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         val coroutineScope = rememberCoroutineScope()
 
-        ModalBottomSheetLayout(sheetState = sheetState, sheetContent = {
+        ModalBottomSheetLayout(sheetState = sheetState, sheetBackgroundColor = Color.Black, sheetContentColor = Color(0xFFFF4F00), sheetContent = {
             BottomSheetContent()
         }) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -115,6 +115,7 @@ class MapActivity : ComponentActivity() {
     @Composable
     fun ListItem(style: String) {
         TextButton(
+            colors = ButtonDefaults.buttonColors(contentColor = Color(0xFFFF4F00), backgroundColor = Color.Black),
             onClick = {
                 when (style) {
                     "STREETS" -> {

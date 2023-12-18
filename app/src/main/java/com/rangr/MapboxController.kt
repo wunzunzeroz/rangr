@@ -101,7 +101,7 @@ class MapboxController(private val mapView: MapView) {
 
         var apiKey = BuildConfig.LINZ_API_KEY
 
-        mapView.mapboxMap.loadStyle(Style.DARK) {
+        mapView.mapboxMap.loadStyle(Style.OUTDOORS) {
             it.addSource(
                 rasterDemSource("TERRAIN_SOURCE") {
                     url(TERRAIN_URL_TILE_RESOURCE)
@@ -115,12 +115,25 @@ class MapboxController(private val mapView: MapView) {
                     maxzoom(18)
                 }
             )
+            it.addSource(
+                rasterSource("LINZ_MARINE_SOUTH") {
+                    tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4759/EPSG:3857/{z}/{x}/{y}.png"))
+                    tileSize(128)
+                    minzoom(2)
+                    maxzoom(18)
+                }
+            )
             it.setTerrain(
                 terrain("TERRAIN_SOURCE")
             )
             it.addLayer(
                 rasterLayer("LINZ_MARINE_LAYER", "LINZ_MARINE") {
                     sourceLayer("LINZ_MARINE")
+                },
+            )
+            it.addLayer(
+                rasterLayer("LINZ_MARINE_LAYER_SOUTH", "LINZ_MARINE_SOUTH") {
+                    sourceLayer("LINZ_MARINE_SOUTH")
                 },
             )
         }
