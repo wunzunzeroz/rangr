@@ -1,5 +1,6 @@
 package com.rangr
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Toast
@@ -33,6 +34,8 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class MapActivity : ComponentActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
@@ -84,6 +87,14 @@ class MapActivity : ComponentActivity() {
         var bottomSheetType by remember { mutableStateOf<BottomSheetType?>(null) }
         var tappedPoint by remember { mutableStateOf<Point?>(null) }
 
+        LaunchedEffect(sheetState) {
+            snapshotFlow { sheetState.isVisible }.collect { isVisible ->
+                if (!isVisible) {
+                    pointAnnotationManager.deleteAll() // Clear the symbols when the bottom sheet is hidden
+                }
+            }
+        }
+
         ModalBottomSheetLayout(
             sheetState = sheetState,
             sheetBackgroundColor = Color.Black,
@@ -99,9 +110,11 @@ class MapActivity : ComponentActivity() {
                 MapViewContainer(mapView, onMapTap = {
                     tappedPoint = it
 
+                    val bitmap = BitmapFactory.decodeResource(resources, R.drawable.tap_marker)
+                    val resized = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
                     val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
                         .withPoint(it)
-                        .withIconImage(BitmapFactory.decodeResource(resources, R.drawable.red_marker))
+                        .withIconImage(resized)
                     pointAnnotationManager.create(pointAnnotationOptions)
 
                     bottomSheetType = BottomSheetType.LOCATION_DETAILS
@@ -143,7 +156,18 @@ class MapActivity : ComponentActivity() {
     fun LocationDetailsBottomSheet(tappedPoint: Point?) {
         // Content showing location details
         if (tappedPoint != null) {
-            Text("Coordinates: ${tappedPoint.latitude()}, ${tappedPoint.longitude()}")
+
+            val latitude = tappedPoint.latitude()
+            val longitude = tappedPoint.longitude()
+
+            val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+            val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text("Tapped Point:")
+                Text("LAT: $lat")
+                Text("LNG: $lng")
+            }
         }
     }
 
