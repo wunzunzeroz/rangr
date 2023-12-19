@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.createBitmap
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -32,10 +31,13 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class MapActivity : ComponentActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
@@ -134,14 +136,22 @@ class MapActivity : ComponentActivity() {
                             }
 
                         },
+                        contentPadding = PaddingValues(0.dp),
                         shape = CircleShape,
-                        modifier = Modifier.size(width = 55.dp, height = 55.dp),
+                        modifier = Modifier
+                            .size(width = 45.dp, height = 45.dp),
                         colors = ButtonDefaults.buttonColors(
                             contentColor = Color(0xFFFF4F00),
                             backgroundColor = Color.Black
                         )
                     ) {
-                        Icon(Icons.Filled.Layers, tint = Color(0xFFFF4F00), contentDescription = "Show bottom sheet")
+                        Icon(
+                            Icons.Filled.Layers,
+                            modifier = Modifier
+                                .size(25.dp),
+                            tint = Color(0xFFFF4F00),
+                            contentDescription = "Show bottom sheet"
+                        )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     LocateUserButton(mapView)
@@ -154,26 +164,46 @@ class MapActivity : ComponentActivity() {
 
     private @Composable
     fun LocationDetailsBottomSheet(tappedPoint: Point?) {
+        var userLocation = remember { mutableStateOf<Point?>(null) }
         // Content showing location details
         if (tappedPoint != null) {
+
+            LaunchedEffect(Unit) {
+                userLocation.value = GetUserLocation()
+            }
 
             val latitude = tappedPoint.latitude()
             val longitude = tappedPoint.longitude()
 
+            val distance = userLocation.value?.let { loc ->
+                TurfMeasurement.distance(loc, tappedPoint, "kilometers")
+            }
+
+            val bearing = userLocation.value?.let { loc ->
+                TurfMeasurement.bearing(loc, tappedPoint)
+            }
+
+
             val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
             val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
 
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text("Tapped Point:")
-                Text("LAT: $lat")
-                Text("LNG: $lng")
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Tapped Point:")
+                    Text("LAT: $lat")
+                    Text("LNG: $lng")
+                    distance?.let {
+                        Text("Distance from you: $it km")
+                    }
+                    bearing?.let {
+                        val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
+                        val brg = BigDecimal(normalizedBearing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+
+                        Text("Bearing from you: $brg deg T")
+                    }
+                }
             }
         }
-    }
-
-    @Composable
-    fun MapStyleSelectButton() {
-
     }
 
     @Composable
@@ -235,12 +265,14 @@ class MapActivity : ComponentActivity() {
                 content = {
                     Icon(
                         Icons.Filled.Refresh,
+                        modifier = Modifier.size(25.dp),
                         tint = Color(0xFFFF4F00),
                         contentDescription = "Toggle rotation"
                     )
                 },
                 shape = CircleShape,
-                modifier = Modifier.size(width = 55.dp, height = 55.dp),
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.size(width = 45.dp, height = 45.dp),
                 colors = ButtonDefaults.buttonColors(
                     contentColor = Color(0xFFFF4F00),
                     backgroundColor = Color.Black
@@ -249,47 +281,9 @@ class MapActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    private fun EnableTopoMode() {
-        Box {
-            FloatingActionButton(onClick = {
-                mapController.SetTopographicStyle()
-            },
-                modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.Terrain, contentDescription = "Toggle rotation") })
-        }
-    }
-
-    @Composable
-    private fun EnableMarineMode() {
-        Box {
-            FloatingActionButton(onClick = {
-                mapController.SetNauticalStyle()
-            },
-                modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.DirectionsBoat, contentDescription = "Toggle rotation") })
-        }
-    }
-
     private fun ShowToast() {
         val text = if (hasRotationEnabled) "Map rotation enabled" else "Map rotation disabled"
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-    }
-
-    @Composable
-    fun MapStyleButton() {
-        // Style Toggle Button
-        Box() {
-            var isSatelliteStyle by remember { mutableStateOf(false) }
-            FloatingActionButton(onClick = {
-                isSatelliteStyle = !isSatelliteStyle
-                mapController.SetMapStyle(
-                    if (isSatelliteStyle) Style.SATELLITE else Style.OUTDOORS
-                )
-            },
-                modifier = Modifier.align(Alignment.TopEnd),
-                content = { Icon(Icons.Filled.Layers, contentDescription = "Change Style") })
-        }
     }
 
     override fun onDestroy() {
@@ -297,17 +291,26 @@ class MapActivity : ComponentActivity() {
         mapController.onDestroy()
     }
 
-    @Composable
-    fun Toggle3dButton(mapView: MapView) {
-        var is3d by remember { mutableStateOf(false) }
+    suspend fun GetUserLocation(): Point? = suspendCoroutine { continuation ->
+        val locationService: LocationService = LocationServiceFactory.getOrCreate()
+        var locationProvider: DeviceLocationProvider? = null
 
-        FloatingActionButton(onClick = {
-            is3d = !is3d
+        val request = LocationProviderRequest.Builder()
+            .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
+            .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build();
 
-            mapController.SetCameraPitch(if (is3d) 30.0 else 0.0)
-        }) {
-            Icon(Icons.Filled.Star, contentDescription = "Toggle 3D viewing")
+        val result = locationService.getDeviceLocationProvider(request)
+        if (result.isValue) {
+            locationProvider = result.value!!
+        } else {
         }
+        locationProvider?.getLastLocation { lastLocation ->
+            if (lastLocation == null) {
+                continuation.resume(null)
+            }
+            continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation!!.latitude))
+        }
+
     }
 
     @Composable
@@ -338,13 +341,14 @@ class MapActivity : ComponentActivity() {
                 }
             },
             shape = CircleShape,
-            modifier = Modifier.size(width = 55.dp, height = 55.dp),
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.size(width = 45.dp, height = 45.dp),
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color(0xFFFF4F00),
                 backgroundColor = Color.Black
             ),
         ) {
-            Icon(Icons.Filled.MyLocation, tint = Color(0xFFFF4F00), contentDescription = "Locate User")
+            Icon(Icons.Filled.MyLocation, modifier = Modifier.size(25.dp), tint = Color(0xFFFF4F00), contentDescription = "Locate User")
         }
     }
 
