@@ -26,6 +26,13 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListene
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -209,6 +216,35 @@ class MapboxController(private val mapView: MapView) {
                 continuation.resume(null)
             }
             continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation!!.latitude))
+        }
+    }
+
+    suspend fun getElevation(lat: Double, lon: Double): Double? {
+        val client = HttpClient(CIO)
+        val linzApiKey = BuildConfig.LINZ_API_KEY
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = "https://data.linz.govt.nz/services/query/v1/raster.json?layer=51768&y=$lat&x=$lon&key=$linzApiKey"
+
+                val response: HttpResponse = client.get(url)
+                val jsonObject = JSONObject(response.bodyAsText())
+
+
+                val bands = jsonObject
+                    .getJSONObject("rasterQuery")
+                    .getJSONObject("layers")
+                    .getJSONObject("51768")
+                    .getJSONArray("bands")
+
+                val elevation = bands.getJSONObject(0).getDouble("value")
+                return@withContext elevation
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            } finally {
+                client.close()
+            }
         }
     }
 

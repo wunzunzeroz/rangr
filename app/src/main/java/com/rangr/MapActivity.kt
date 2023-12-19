@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.math.roundToInt
 
 class MapActivity : ComponentActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
@@ -153,11 +154,13 @@ class MapActivity : ComponentActivity() {
     @Composable
     private fun LocationDetailsBottomSheet(tappedPoint: Point?) {
         val userLocation = remember { mutableStateOf<Point?>(null) }
+        val pointElevation = remember { mutableStateOf<Double?>(null) }
 
         if (tappedPoint == null) return
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(tappedPoint) {
             userLocation.value = mapController.GetUserLocation()
+            pointElevation.value = mapController.getElevation(tappedPoint.latitude(), tappedPoint.longitude())
         }
 
         val latitude = tappedPoint.latitude()
@@ -179,12 +182,16 @@ class MapActivity : ComponentActivity() {
                 Text("Tapped Point:")
                 Text("LAT: $lat")
                 Text("LNG: $lng")
+                pointElevation.value?.let { 
+                    Text("Elevation: ${it.roundToInt()}m AMSL")
+                }
                 distance?.let {
-                    Text("Distance from you: $it km")
+                    var dist = BigDecimal(it).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+                    Text("Distance from you: $dist km")
                 }
                 bearing?.let {
                     val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
-                    val brg = BigDecimal(normalizedBearing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+                    val brg = normalizedBearing.roundToInt()
 
                     Text("Bearing from you: $brg deg T")
                 }
