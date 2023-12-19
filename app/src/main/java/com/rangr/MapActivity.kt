@@ -38,8 +38,6 @@ import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class MapActivity : ComponentActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
@@ -154,43 +152,41 @@ class MapActivity : ComponentActivity() {
 
     @Composable
     private fun LocationDetailsBottomSheet(tappedPoint: Point?) {
-        var userLocation = remember { mutableStateOf<Point?>(null) }
-        // Content showing location details
-        if (tappedPoint != null) {
+        val userLocation = remember { mutableStateOf<Point?>(null) }
 
-            LaunchedEffect(Unit) {
-                userLocation.value = GetUserLocation()
-            }
+        if (tappedPoint == null) return
 
-            val latitude = tappedPoint.latitude()
-            val longitude = tappedPoint.longitude()
+        LaunchedEffect(Unit) {
+            userLocation.value = mapController.GetUserLocation()
+        }
 
-            val distance = userLocation.value?.let { loc ->
-                TurfMeasurement.distance(loc, tappedPoint, "kilometers")
-            }
+        val latitude = tappedPoint.latitude()
+        val longitude = tappedPoint.longitude()
 
-            val bearing = userLocation.value?.let { loc ->
-                TurfMeasurement.bearing(loc, tappedPoint)
-            }
+        val distance = userLocation.value?.let { loc ->
+            TurfMeasurement.distance(loc, tappedPoint, "kilometers")
+        }
 
+        val bearing = userLocation.value?.let { loc ->
+            TurfMeasurement.bearing(loc, tappedPoint)
+        }
 
-            val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-            val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+        val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+        val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
 
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Tapped Point:")
-                    Text("LAT: $lat")
-                    Text("LNG: $lng")
-                    distance?.let {
-                        Text("Distance from you: $it km")
-                    }
-                    bearing?.let {
-                        val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
-                        val brg = BigDecimal(normalizedBearing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Tapped Point:")
+                Text("LAT: $lat")
+                Text("LNG: $lng")
+                distance?.let {
+                    Text("Distance from you: $it km")
+                }
+                bearing?.let {
+                    val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
+                    val brg = BigDecimal(normalizedBearing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
 
-                        Text("Bearing from you: $brg deg T")
-                    }
+                    Text("Bearing from you: $brg deg T")
                 }
             }
         }
@@ -260,32 +256,22 @@ class MapActivity : ComponentActivity() {
             )
         }
     }
+
     @Composable
     fun LocateUserButton() {
+        val userLocation = remember { mutableStateOf<Point?>(null) }
+
+        LaunchedEffect(Unit) {
+            userLocation.value = mapController.GetUserLocation()
+        }
+
         MapActionButton(
             icon = Icons.Filled.MyLocation, onClick = {
-                val locationService: LocationService = LocationServiceFactory.getOrCreate()
-                var locationProvider: DeviceLocationProvider? = null
-
-                val request = LocationProviderRequest.Builder()
-                    .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
-                    .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build()
-
-                val result = locationService.getDeviceLocationProvider(request)
-                if (result.isValue) {
-                    locationProvider = result.value!!
-                } else {
-                }
-                locationProvider?.getLastLocation { lastLocation ->
-                    lastLocation?.let {
-                        // Scroll the map to the user's location
-                        mapView.mapboxMap.setCamera(
-                            CameraOptions.Builder().center(Point.fromLngLat(it.longitude, it.latitude))
-                                .zoom(14.0) // Adjust the zoom level as needed
-                                .build()
-                        )
-                    }
-                }
+                mapView.mapboxMap.setCamera(
+                    CameraOptions.Builder().center(userLocation.value)
+                        .zoom(14.0) // Adjust the zoom level as needed
+                        .build()
+                )
             }, contentDescription = "My location"
         )
     }
@@ -307,30 +293,6 @@ class MapActivity : ComponentActivity() {
         val text = if (hasRotationEnabled) "Map rotation enabled" else "Map rotation disabled"
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
-
-    suspend fun GetUserLocation(): Point? = suspendCoroutine { continuation ->
-        val locationService: LocationService = LocationServiceFactory.getOrCreate()
-        var locationProvider: DeviceLocationProvider? = null
-
-        val request = LocationProviderRequest.Builder()
-            .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
-            .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build()
-
-        val result = locationService.getDeviceLocationProvider(request)
-        if (result.isValue) {
-            locationProvider = result.value!!
-        } else {
-        }
-        locationProvider?.getLastLocation { lastLocation ->
-            if (lastLocation == null) {
-                continuation.resume(null)
-            }
-            continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation.latitude))
-        }
-
-    }
-
-
 
     @Composable
     fun MapViewContainer(mapView: MapView, onMapTap: (Point) -> Unit) {

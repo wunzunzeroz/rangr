@@ -1,7 +1,7 @@
 package com.rangr
 
-import android.widget.Toast
 import com.mapbox.android.gestures.MoveGestureDetector
+import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -26,6 +26,9 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListene
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class MapboxController(private val mapView: MapView) {
     private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
@@ -58,8 +61,10 @@ class MapboxController(private val mapView: MapView) {
     fun SetTopographicStyle() {
         val apiKey = BuildConfig.LINZ_API_KEY
 
-        val topo50Url = "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52343/EPSG:3857/{z}/{x}/{y}.png"
-        val topo250Url = "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52324/EPSG:3857/{z}/{x}/{y}.png"
+        val topo50Url =
+            "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52343/EPSG:3857/{z}/{x}/{y}.png"
+        val topo250Url =
+            "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52324/EPSG:3857/{z}/{x}/{y}.png"
 
         mapView.mapboxMap.loadStyle(Style.OUTDOORS) {
             it.addSource(
@@ -97,6 +102,7 @@ class MapboxController(private val mapView: MapView) {
             )
         }
     }
+
     fun SetNauticalStyle() {
 
         var apiKey = BuildConfig.LINZ_API_KEY
@@ -138,6 +144,7 @@ class MapboxController(private val mapView: MapView) {
             )
         }
     }
+
     fun SetMapStyle(style: String) {
         mapView.mapboxMap.loadStyle(styleExtension = style(style) {
             +rasterDemSource(SOURCE) {
@@ -182,7 +189,28 @@ class MapboxController(private val mapView: MapView) {
         mapView.mapboxMap.setCamera(CameraOptions.Builder().pitch(pitch).build())
     }
 
-    fun Toggle3dView() {}
+    suspend fun GetUserLocation(): Point? = suspendCoroutine { continuation ->
+        val locationService: LocationService = LocationServiceFactory.getOrCreate()
+        var locationProvider: DeviceLocationProvider? = null
+
+        val request = LocationProviderRequest.Builder()
+            .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
+            .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build()
+
+        val result = locationService.getDeviceLocationProvider(request)
+        if (!result.isValue) {
+            continuation.resumeWithException(RuntimeException("Unable to get device location provider"))
+            return@suspendCoroutine
+        }
+        locationProvider = result.value
+
+        locationProvider?.getLastLocation { lastLocation ->
+            if (lastLocation == null) {
+                continuation.resume(null)
+            }
+            continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation!!.latitude))
+        }
+    }
 
     fun ScrollToLocation(lng: Double, lat: Double) {
         val cameraOptions = CameraOptions.Builder().center(Point.fromLngLat(lng, lat)).build()
