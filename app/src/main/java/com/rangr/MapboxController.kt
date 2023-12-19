@@ -161,7 +161,7 @@ class MapboxController(private val mapView: MapView) {
         )
 
         mapView.mapboxMap.loadStyle(
-            Style.STANDARD
+            Style.OUTDOORS
         ) {
             initLocationComponent()
             setupGesturesListener()

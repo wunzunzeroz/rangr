@@ -250,7 +250,7 @@ class MapActivity : ComponentActivity() {
             onClick = onClick,
             shape = CircleShape,
             contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(width = 45.dp, height = 45.dp),
+            modifier = Modifier.size(45.dp),
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color(0xFFFF4F00), backgroundColor = Color.Black
             ),
