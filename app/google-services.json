@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "838895167491",
+    "project_id": "rangr-app",
+    "storage_bucket": "rangr-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838895167491:android:d86612b468fdc16be04636",
+        "android_client_info": {
+          "package_name": "com.rangr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBq1Y2D-EfUt3poBHT64apK7B5LU1Q2wNA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
