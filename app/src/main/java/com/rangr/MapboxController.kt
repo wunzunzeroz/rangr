@@ -270,7 +270,7 @@ class MapboxController(private val mapView: MapView) {
             locationPuck = createDefault2DPuck(withBearing = true)
         }
         locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
-        locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
+//        locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
     }
 
     private fun onCameraTrackingDismissed() {

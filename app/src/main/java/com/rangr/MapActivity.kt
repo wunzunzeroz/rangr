@@ -34,6 +34,7 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.turf.TurfMeasurement
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
@@ -155,12 +156,24 @@ class MapActivity : ComponentActivity() {
     private fun LocationDetailsBottomSheet(tappedPoint: Point?) {
         val userLocation = remember { mutableStateOf<Point?>(null) }
         val pointElevation = remember { mutableStateOf<Double?>(null) }
+        val userElevation = remember { mutableStateOf<Double?>(null) }
 
         if (tappedPoint == null) return
 
         LaunchedEffect(tappedPoint) {
-            userLocation.value = mapController.GetUserLocation()
-            pointElevation.value = mapController.getElevation(tappedPoint.latitude(), tappedPoint.longitude())
+            // Assuming GetUserLocation() is a suspend function that returns a non-null value
+            val userLoc = mapController.GetUserLocation()
+            userLocation.value = userLoc
+
+            // Asynchronously fetch elevations
+            coroutineScope {
+                launch {
+                    pointElevation.value = mapController.getElevation(tappedPoint.latitude(), tappedPoint.longitude())
+                }
+                launch {
+                    userElevation.value = mapController.getElevation(userLoc!!.latitude(), userLoc.longitude())
+                }
+            }
         }
 
         val latitude = tappedPoint.latitude()
@@ -194,6 +207,12 @@ class MapActivity : ComponentActivity() {
                     val brg = normalizedBearing.roundToInt()
 
                     Text("Bearing from you: $brg deg T")
+                }
+                userElevation.let {
+                    val relative = if (userElevation.value != null) pointElevation.value!! - userElevation.value!! else 0.0;
+                    var rel = BigDecimal(relative).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+
+                    Text("Relative elevation: $rel m")
                 }
             }
         }
