@@ -1,4 +1,4 @@
-package com.rangr
+package com.rangr.map
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,17 +24,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.mapbox.common.location.*
+import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.*
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.turf.TurfMeasurement
+import com.rangr.R
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -42,10 +42,13 @@ import java.math.RoundingMode
 import kotlin.math.roundToInt
 
 class MapActivity : ComponentActivity() {
+    private val mapViewModel: MapViewModel by viewModels()
+
     private lateinit var locationPermissionHelper: LocationPermissionHelper
     private lateinit var mapView: MapView
     private lateinit var mapController: MapboxController
     private lateinit var pointAnnotationManager: PointAnnotationManager
+    private lateinit var lineAnnotationManager: PolylineAnnotationManager
 
     private var hasRotationEnabled: Boolean = false
 
@@ -61,6 +64,18 @@ class MapActivity : ComponentActivity() {
 
         val annotationApi = mapView.annotations
         pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        lineAnnotationManager = annotationApi.createPolylineAnnotationManager()
+
+
+
+        val lineString = LineString.fromLngLats(mapViewModel.route.value!!)
+        val polylineAnnotationOptions: PolylineAnnotationOptions = PolylineAnnotationOptions()
+            .withPoints(mapViewModel.route.value!!)
+            .withLineColor("#b3fffc")
+            .withLineWidth(5.0)
+            .withDraggable(false)
+// Add the resulting line to the map.
+        lineAnnotationManager.create(polylineAnnotationOptions)
 
         setContent { MainScreen(mapView = mapView) }
 

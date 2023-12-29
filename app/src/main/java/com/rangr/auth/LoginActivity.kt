@@ -1,4 +1,4 @@
-package com.rangr
+package com.rangr.auth
 
 import android.content.ContentValues.TAG
 import android.os.Bundle
@@ -20,7 +20,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.rangr.auth.AuthViewModel
 
 class LoginActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth

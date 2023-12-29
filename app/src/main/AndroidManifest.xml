@@ -18,7 +18,7 @@
             android:theme="@style/Theme.RANGR"
             tools:targetApi="31">
         <activity
-                android:name=".MapActivity"
+                android:name=".map.MapActivity"
                 android:exported="true"
                 android:label="@string/app_name"
                 android:theme="@style/Theme.RANGR">
@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".LoginActivity"
+                android:name=".auth.LoginActivity"
                 android:exported="true"
                 android:label="@string/app_name"
                 android:theme="@style/Theme.RANGR">

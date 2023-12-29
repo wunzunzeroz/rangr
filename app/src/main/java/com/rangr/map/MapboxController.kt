@@ -1,4 +1,4 @@
-package com.rangr
+package com.rangr.map
 
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.common.location.*
@@ -26,6 +26,7 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListene
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
+import com.rangr.BuildConfig
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
@@ -218,7 +219,7 @@ class MapboxController(private val mapView: MapView) {
             if (lastLocation == null) {
                 continuation.resume(null)
             }
-            continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation!!.latitude))
+            continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation.latitude))
         }
     }
 
