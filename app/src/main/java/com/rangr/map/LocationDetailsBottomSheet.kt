@@ -12,7 +12,11 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Composable
-fun LocationDetailsBottomSheet(tappedPoint: Point, mapViewModel: MapViewModel) {
+fun LocationDetailsBottomSheet(tappedPoint: Point?, mapViewModel: MapViewModel) {
+    if (tappedPoint == null ) {
+        return
+    }
+
     val lat = BigDecimal(tappedPoint.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
     val lng = BigDecimal(tappedPoint.longitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
 

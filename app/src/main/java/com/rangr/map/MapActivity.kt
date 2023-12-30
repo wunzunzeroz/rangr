@@ -43,11 +43,12 @@ class MapActivity : ComponentActivity() {
     private val model: MapViewModel by viewModels()
 
     private lateinit var locationPermissionHelper: LocationPermissionHelper
-    private lateinit var mapView: MapView
+
+    private lateinit var mapView: MapView // TODO - Move to view model
     private lateinit var mapController: MapboxController // TODO - Remove
     private lateinit var pointAnnotationManager: PointAnnotationManager // TODO - Remove
 
-    private var hasRotationEnabled: Boolean = false
+    private var hasRotationEnabled: Boolean = false // TODO - Move to view model
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,8 +62,8 @@ class MapActivity : ComponentActivity() {
         mapController.SetMapStyle(Style.OUTDOORS)
         mapController.SetMapRotation(hasRotationEnabled)
 
-        val annotationApi = mapView.annotations
-        pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        val annotationApi = mapView.annotations // TODO - Move to model/controller
+        pointAnnotationManager = annotationApi.createPointAnnotationManager() // TODO - Move to model/controller
 
         setContent { MainScreen(mapView = mapView) }
 
@@ -99,11 +100,19 @@ class MapActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun MainScreen(mapView: MapView) {
-        val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-        val coroutineScope = rememberCoroutineScope()
+        Box(modifier = Modifier.fillMaxSize()) {
+            MapViewContainer(mapView, onMapTap = {})
+            GetUiOverlayForMapState()
+        }
+    }
 
-        var bottomSheetType by remember { mutableStateOf<BottomSheetType?>(null) }
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun MapViewContainer(mapView: MapView, onMapTap: (Point) -> Unit) {
+
+        val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         var tappedPoint by remember { mutableStateOf<Point?>(null) }
+        val coroutineScope = rememberCoroutineScope()
 
         LaunchedEffect(sheetState) {
             snapshotFlow { sheetState.isVisible }.collect { isVisible ->
@@ -113,18 +122,13 @@ class MapActivity : ComponentActivity() {
             }
         }
 
-        ModalBottomSheetLayout(sheetState = sheetState,
+        ModalBottomSheetLayout(
+            sheetState = sheetState, sheetContent = { LocationDetailsBottomSheet(tappedPoint, model) },
             sheetBackgroundColor = Color.Black,
             sheetContentColor = Color(0xFFFF4F00),
-            sheetContent = {
-                when (bottomSheetType) {
-                    BottomSheetType.MAP_STYLE_SELECTION -> MapStyleBottomSheet()
-                    BottomSheetType.LOCATION_DETAILS -> LocationDetailsBottomSheet(tappedPoint!!, model)
-                    null -> {}
-                }
-            }) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                MapViewContainer(mapView, onMapTap = {
+        ) {
+            AndroidView({ mapView }) { mapView ->
+                mapView.mapboxMap.addOnMapClickListener {
                     tappedPoint = it
 
                     val bitmap = BitmapFactory.decodeResource(resources, R.drawable.tap_marker)
@@ -133,34 +137,10 @@ class MapActivity : ComponentActivity() {
                         PointAnnotationOptions().withPoint(it).withIconImage(resized)
                     pointAnnotationManager.create(pointAnnotationOptions)
 
-                    bottomSheetType = BottomSheetType.LOCATION_DETAILS
                     coroutineScope.launch { sheetState.show() }
-                })
-//                if (model.mapState.value == MapState.Viewing) {
-//                    Column(modifier = Modifier.padding(8.dp)) {
-//                        Spacer(modifier = Modifier.height(32.dp))
-//                        MapActionButton(
-//                            icon = Icons.Filled.Layers,
-//                            onClick = {
-//                                bottomSheetType = BottomSheetType.MAP_STYLE_SELECTION
-//                                coroutineScope.launch {
-//                                    if (sheetState.isVisible) {
-//                                        sheetState.hide()
-//                                    } else {
-//                                        sheetState.show()
-//                                    }
-//                                }
-//
-//                            },
-//                            contentDescription = "Select map style",
-//                        )
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        LocateUserButton()
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        ToggleRotateButton()
-//                    }
-//                }
-                GetUiOverlayForMapState()
+
+                    true
+                }
             }
         }
     }
@@ -182,16 +162,17 @@ class MapActivity : ComponentActivity() {
         val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         val coroutineScope = rememberCoroutineScope()
 
-        ModalBottomSheetLayout(sheetState = sheetState, sheetContent = { MapStyleBottomSheet() },
+        ModalBottomSheetLayout(
+            sheetState = sheetState, sheetContent = { MapStyleBottomSheet() },
             sheetBackgroundColor = Color.Black,
             sheetContentColor = Color(0xFFFF4F00),
-            ) {
+        ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Spacer(modifier = Modifier.height(32.dp))
                 MapActionButton(
                     icon = Icons.Filled.Layers,
                     onClick = {
-                              coroutineScope.launch { sheetState.show() }
+                        coroutineScope.launch { sheetState.show() }
                     },
                     contentDescription = "Select map style",
                 )
@@ -202,10 +183,6 @@ class MapActivity : ComponentActivity() {
             }
         }
 
-    }
-
-    private fun showMapTypeBottomSheet() {
-        TODO("Not yet implemented")
     }
 
     @Composable
@@ -222,8 +199,7 @@ class MapActivity : ComponentActivity() {
         ) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-                        .padding(8.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
                 ) {
                     Text("ACTIVE ROUTE", color = Color.White)
                     Text("LEGS: $legs", color = Color(0xFFFF4F00))
@@ -240,72 +216,6 @@ class MapActivity : ComponentActivity() {
         }
 
     }
-
-//    @Composable
-//    private fun LocationDetailsBottomSheet(tappedPoint: Point?) {
-//        val userLocation = remember { mutableStateOf<Point?>(null) }
-//        val pointElevation = remember { mutableStateOf<Double?>(null) }
-//        val userElevation = remember { mutableStateOf<Double?>(null) }
-//
-//        if (tappedPoint == null) return
-//
-//        LaunchedEffect(tappedPoint) {
-//            // Assuming GetUserLocation() is a suspend function that returns a non-null value
-//            val userLoc = mapController.GetUserLocation()
-//            userLocation.value = userLoc
-//
-//            // Asynchronously fetch elevations
-//            coroutineScope {
-//                launch {
-//                    pointElevation.value = mapController.getElevation(tappedPoint.latitude(), tappedPoint.longitude())
-//                }
-//                launch {
-//                    userElevation.value = mapController.getElevation(userLoc!!.latitude(), userLoc.longitude())
-//                }
-//            }
-//        }
-//
-//        val latitude = tappedPoint.latitude()
-//        val longitude = tappedPoint.longitude()
-//
-//        val distance = userLocation.value?.let { loc ->
-//            TurfMeasurement.distance(loc, tappedPoint, "kilometers")
-//        }
-//
-//        val bearing = userLocation.value?.let { loc ->
-//            TurfMeasurement.bearing(loc, tappedPoint)
-//        }
-//
-//        val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-//        val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-//
-//        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-//            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-//                Text("Tapped Point:")
-//                Text("LAT: $lat")
-//                Text("LNG: $lng")
-//                pointElevation.value?.let {
-//                    Text("Elevation: ${it.roundToInt()}m AMSL")
-//                }
-//                distance?.let {
-//                    var dist = BigDecimal(it).setScale(1, RoundingMode.HALF_EVEN).toDouble()
-//                    Text("Distance from you: $dist km")
-//                }
-//                bearing?.let {
-//                    val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
-//                    val brg = normalizedBearing.roundToInt()
-//
-//                    Text("Bearing from you: $brg deg T")
-//                }
-//                userElevation.let {
-//                    val relative = if (userElevation.value != null) pointElevation.value!! - userElevation.value!! else 0.0;
-//                    var rel = BigDecimal(relative).setScale(1, RoundingMode.HALF_EVEN).toDouble()
-//
-//                    Text("Relative elevation: $rel m")
-//                }
-//            }
-//        }
-//    }
 
     @Composable
     fun MapStyleBottomSheet() {
@@ -384,8 +294,7 @@ class MapActivity : ComponentActivity() {
         MapActionButton(
             icon = Icons.Filled.MyLocation, onClick = {
                 mapView.mapboxMap.setCamera(
-                    CameraOptions.Builder().center(userLocation.value)
-                        .zoom(14.0) // Adjust the zoom level as needed
+                    CameraOptions.Builder().center(userLocation.value).zoom(14.0) // Adjust the zoom level as needed
                         .build()
                 )
             }, contentDescription = "My location"
@@ -394,30 +303,16 @@ class MapActivity : ComponentActivity() {
 
     @Composable
     private fun ToggleRotateButton() {
+        val text = if (hasRotationEnabled) "Map rotation enabled" else "Map rotation disabled"
         MapActionButton(
             icon = Icons.Filled.Refresh,
             onClick = {
                 hasRotationEnabled = !hasRotationEnabled
                 mapController.SetMapRotation(hasRotationEnabled)
-                ShowToast()
+                Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
             },
             contentDescription = "Toggle map rotation",
         )
-    }
-
-    private fun ShowToast() {
-        val text = if (hasRotationEnabled) "Map rotation enabled" else "Map rotation disabled"
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-    }
-
-    @Composable
-    fun MapViewContainer(mapView: MapView, onMapTap: (Point) -> Unit) {
-        AndroidView({ mapView }) { mapView ->
-            mapView.mapboxMap.addOnMapClickListener {
-                onMapTap(it)
-                true
-            }
-        }
     }
 
 }

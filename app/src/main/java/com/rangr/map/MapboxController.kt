@@ -149,10 +149,6 @@ class MapboxController(private val mapView: MapView) {
         }
     }
 
-    fun SetCoastguardStyle() {
-        mapView.mapboxMap.loadStyle("mapbox://styles/mttchpmn/clqdc2n38000z01pxhfng95g8")
-    }
-
     fun SetNauticalStyle() {
 
         var apiKey = BuildConfig.LINZ_API_KEY
@@ -214,10 +210,6 @@ class MapboxController(private val mapView: MapView) {
         mapView.location.removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
         mapView.location.removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         mapView.gestures.removeOnMoveListener(onMoveListener)
-    }
-
-    fun SetCameraPitch(pitch: Double) {
-        mapView.mapboxMap.setCamera(CameraOptions.Builder().pitch(pitch).build())
     }
 
     suspend fun GetUserLocation(): Point? = suspendCoroutine { continuation ->
