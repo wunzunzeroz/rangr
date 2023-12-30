@@ -4,6 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
+import com.mapbox.turf.TurfConstants
+import com.mapbox.turf.TurfMeasurement
 import com.rangr.BuildConfig
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -12,28 +14,27 @@ import io.ktor.client.statement.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class MapViewModel : ViewModel() {
     private var _tappedLocation = MutableLiveData<Point>()
-
-    private var _route = MutableLiveData<List<Point>>()
-
     val tappedLocation = _tappedLocation
 
+    private var _mapState = MutableLiveData<MapState>(MapState.Viewing)
+    val mapState = _mapState
+
+    private var _route = MutableLiveData<List<Point>>(emptyList())
     val route = _route
 
+    private var _routeDistance = MutableLiveData<Double>(0.0)
+    val routeDistance = _routeDistance
+
     init {
-        _route.value = listOf(
-            Point.fromLngLat(168.711982, -45.019794),
-            Point.fromLngLat(168.730094, -45.020903),
-            Point.fromLngLat(168.720684, -45.028618)
-        )
     }
-
-
 
     suspend fun getUserLocation(): Point? = suspendCoroutine { continuation ->
         val locationService: LocationService = LocationServiceFactory.getOrCreate()
@@ -64,16 +65,14 @@ class MapViewModel : ViewModel() {
 
         return withContext(Dispatchers.IO) {
             try {
-                val url = "https://data.linz.govt.nz/services/query/v1/raster.json?layer=51768&y=$lat&x=$lon&key=$linzApiKey"
+                val url =
+                    "https://data.linz.govt.nz/services/query/v1/raster.json?layer=51768&y=$lat&x=$lon&key=$linzApiKey"
 
                 val response: HttpResponse = client.get(url)
                 val jsonObject = JSONObject(response.bodyAsText())
 
 
-                val bands = jsonObject
-                    .getJSONObject("rasterQuery")
-                    .getJSONObject("layers")
-                    .getJSONObject("51768")
+                val bands = jsonObject.getJSONObject("rasterQuery").getJSONObject("layers").getJSONObject("51768")
                     .getJSONArray("bands")
 
                 val elevation = bands.getJSONObject(0).getDouble("value")
@@ -86,4 +85,51 @@ class MapViewModel : ViewModel() {
             }
         }
     }
+
+    fun createWaypoint(tappedPoint: Point) {
+        _mapState.value = MapState.Viewing
+    }
+
+    fun addToRoute(tappedPoint: Point) {
+        println("CREATE ROUTE")
+        _mapState.value = MapState.Routing
+
+        addPointToRoute(tappedPoint)
+    }
+
+    fun clearRoute() {
+        _route.value = emptyList()
+        _routeDistance.value = 0.0
+        _mapState.value = MapState.Viewing
+    }
+
+    private fun addPointToRoute(point: Point) {
+        val route = _route.value ?: emptyList()
+        val newRoute = route + point
+
+        val routeDistance = calculateRouteDistance(newRoute)
+        val dist = BigDecimal(routeDistance).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+
+        _route.value = newRoute
+        _routeDistance.value = dist
+    }
+
+    private fun calculateRouteDistance(route: List<Point>): Double {
+        var totalDistance = 0.0
+
+        for (i in 0 until route.size - 1) {
+            val a = route[i]
+            val b = route[i + 1]
+
+            val legDistance = TurfMeasurement.distance(a, b, TurfConstants.UNIT_METRES)
+
+            totalDistance += legDistance
+        }
+
+        return totalDistance
+    }
+}
+
+enum class MapState {
+    Viewing, Routing
 }

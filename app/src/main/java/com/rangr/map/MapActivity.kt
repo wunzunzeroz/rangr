@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,17 +34,12 @@ import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.*
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
-import com.mapbox.turf.TurfMeasurement
 import com.rangr.R
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
-import java.math.BigDecimal
-import java.math.RoundingMode
-import kotlin.math.roundToInt
 
 class MapActivity : ComponentActivity() {
-    private val mapViewModel: MapViewModel by viewModels()
+    private val model: MapViewModel by viewModels()
 
     private lateinit var locationPermissionHelper: LocationPermissionHelper
     private lateinit var mapView: MapView
@@ -66,11 +63,9 @@ class MapActivity : ComponentActivity() {
         pointAnnotationManager = annotationApi.createPointAnnotationManager()
         lineAnnotationManager = annotationApi.createPolylineAnnotationManager()
 
-
-
-        val lineString = LineString.fromLngLats(mapViewModel.route.value!!)
+        val lineString = LineString.fromLngLats(model.route.value!!)
         val polylineAnnotationOptions: PolylineAnnotationOptions = PolylineAnnotationOptions()
-            .withPoints(mapViewModel.route.value!!)
+            .withPoints(model.route.value!!)
             .withLineColor("#b3fffc")
             .withLineWidth(5.0)
             .withDraggable(false)
@@ -81,9 +76,12 @@ class MapActivity : ComponentActivity() {
 
         locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
         locationPermissionHelper.checkPermissions {
-            mapController.OnMapReady()
+            mapController.onMapReady()
         }
+
+        model.route.observe(this) { mapController.renderRoute(it, getBitmap()) }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -99,6 +97,11 @@ class MapActivity : ComponentActivity() {
 
     enum class BottomSheetType {
         MAP_STYLE_SELECTION, LOCATION_DETAILS
+    }
+
+    fun getBitmap(): Bitmap {
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.tap_marker)
+        return Bitmap.createScaledBitmap(bitmap, 50, 50, false)
     }
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -124,7 +127,7 @@ class MapActivity : ComponentActivity() {
             sheetContent = {
                 when (bottomSheetType) {
                     BottomSheetType.MAP_STYLE_SELECTION -> MapStyleBottomSheet()
-                    BottomSheetType.LOCATION_DETAILS -> LocationDetailsBottomSheet(tappedPoint)
+                    BottomSheetType.LOCATION_DETAILS -> LocationDetailsBottomSheet(tappedPoint!!, model)
                     null -> {}
                 }
             }) {
@@ -141,97 +144,162 @@ class MapActivity : ComponentActivity() {
                     bottomSheetType = BottomSheetType.LOCATION_DETAILS
                     coroutineScope.launch { sheetState.show() }
                 })
-                Column(modifier = Modifier.padding(8.dp)) {
-                    Spacer(modifier = Modifier.height(32.dp))
-                    MapActionButton(
-                        icon = Icons.Filled.Layers,
-                        onClick = {
-                            bottomSheetType = BottomSheetType.MAP_STYLE_SELECTION
-                            coroutineScope.launch {
-                                if (sheetState.isVisible) {
-                                    sheetState.hide()
-                                } else {
-                                    sheetState.show()
-                                }
-                            }
-
-                        },
-                        contentDescription = "Select map style",
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LocateUserButton()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ToggleRotateButton()
-                }
+//                if (model.mapState.value == MapState.Viewing) {
+//                    Column(modifier = Modifier.padding(8.dp)) {
+//                        Spacer(modifier = Modifier.height(32.dp))
+//                        MapActionButton(
+//                            icon = Icons.Filled.Layers,
+//                            onClick = {
+//                                bottomSheetType = BottomSheetType.MAP_STYLE_SELECTION
+//                                coroutineScope.launch {
+//                                    if (sheetState.isVisible) {
+//                                        sheetState.hide()
+//                                    } else {
+//                                        sheetState.show()
+//                                    }
+//                                }
+//
+//                            },
+//                            contentDescription = "Select map style",
+//                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        LocateUserButton()
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        ToggleRotateButton()
+//                    }
+//                }
+                GetUiOverlayForMapState()
             }
         }
     }
 
     @Composable
-    private fun LocationDetailsBottomSheet(tappedPoint: Point?) {
-        val userLocation = remember { mutableStateOf<Point?>(null) }
-        val pointElevation = remember { mutableStateOf<Double?>(null) }
-        val userElevation = remember { mutableStateOf<Double?>(null) }
+    private fun GetUiOverlayForMapState() {
+        val state by model.mapState.observeAsState()
 
-        if (tappedPoint == null) return
-
-        LaunchedEffect(tappedPoint) {
-            // Assuming GetUserLocation() is a suspend function that returns a non-null value
-            val userLoc = mapController.GetUserLocation()
-            userLocation.value = userLoc
-
-            // Asynchronously fetch elevations
-            coroutineScope {
-                launch {
-                    pointElevation.value = mapController.getElevation(tappedPoint.latitude(), tappedPoint.longitude())
-                }
-                launch {
-                    userElevation.value = mapController.getElevation(userLoc!!.latitude(), userLoc.longitude())
-                }
-            }
-        }
-
-        val latitude = tappedPoint.latitude()
-        val longitude = tappedPoint.longitude()
-
-        val distance = userLocation.value?.let { loc ->
-            TurfMeasurement.distance(loc, tappedPoint, "kilometers")
-        }
-
-        val bearing = userLocation.value?.let { loc ->
-            TurfMeasurement.bearing(loc, tappedPoint)
-        }
-
-        val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-        val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Tapped Point:")
-                Text("LAT: $lat")
-                Text("LNG: $lng")
-                pointElevation.value?.let { 
-                    Text("Elevation: ${it.roundToInt()}m AMSL")
-                }
-                distance?.let {
-                    var dist = BigDecimal(it).setScale(1, RoundingMode.HALF_EVEN).toDouble()
-                    Text("Distance from you: $dist km")
-                }
-                bearing?.let {
-                    val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
-                    val brg = normalizedBearing.roundToInt()
-
-                    Text("Bearing from you: $brg deg T")
-                }
-                userElevation.let {
-                    val relative = if (userElevation.value != null) pointElevation.value!! - userElevation.value!! else 0.0;
-                    var rel = BigDecimal(relative).setScale(1, RoundingMode.HALF_EVEN).toDouble()
-
-                    Text("Relative elevation: $rel m")
-                }
-            }
+        when (state) {
+            MapState.Routing -> RoutingScreen()
+            MapState.Viewing -> ViewingScreen()
+            null -> ViewingScreen()
         }
     }
+
+    @Composable
+    private fun ViewingScreen() {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Spacer(modifier = Modifier.height(32.dp))
+            MapActionButton(
+                icon = Icons.Filled.Layers,
+                onClick = {
+                },
+                contentDescription = "Select map style",
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LocateUserButton()
+            Spacer(modifier = Modifier.height(8.dp))
+            ToggleRotateButton()
+        }
+
+    }
+
+    @Composable
+    private fun RoutingScreen() {
+        val route by model.route.observeAsState(emptyList())
+        val distance by model.routeDistance.observeAsState(0.0)
+
+        val legs = route.count() - 1
+
+        Box(
+            modifier = Modifier
+                .background(color = Color.Black)
+                .fillMaxWidth()
+        ) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+                        .padding(8.dp)
+                ) {
+                    Text("ACTIVE ROUTE", color = Color.White)
+                    Text("LEGS: $legs", color = Color(0xFFFF4F00))
+                    Text("DISTANCE: $distance m", color = Color(0xFFFF4F00))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Button(onClick = {
+                    model.clearRoute()
+                    mapController.clearRoute()
+                }) {
+                   Text("Clear Route")
+                }
+            }
+        }
+
+    }
+
+//    @Composable
+//    private fun LocationDetailsBottomSheet(tappedPoint: Point?) {
+//        val userLocation = remember { mutableStateOf<Point?>(null) }
+//        val pointElevation = remember { mutableStateOf<Double?>(null) }
+//        val userElevation = remember { mutableStateOf<Double?>(null) }
+//
+//        if (tappedPoint == null) return
+//
+//        LaunchedEffect(tappedPoint) {
+//            // Assuming GetUserLocation() is a suspend function that returns a non-null value
+//            val userLoc = mapController.GetUserLocation()
+//            userLocation.value = userLoc
+//
+//            // Asynchronously fetch elevations
+//            coroutineScope {
+//                launch {
+//                    pointElevation.value = mapController.getElevation(tappedPoint.latitude(), tappedPoint.longitude())
+//                }
+//                launch {
+//                    userElevation.value = mapController.getElevation(userLoc!!.latitude(), userLoc.longitude())
+//                }
+//            }
+//        }
+//
+//        val latitude = tappedPoint.latitude()
+//        val longitude = tappedPoint.longitude()
+//
+//        val distance = userLocation.value?.let { loc ->
+//            TurfMeasurement.distance(loc, tappedPoint, "kilometers")
+//        }
+//
+//        val bearing = userLocation.value?.let { loc ->
+//            TurfMeasurement.bearing(loc, tappedPoint)
+//        }
+//
+//        val lat = BigDecimal(latitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+//        val lng = BigDecimal(longitude).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+//
+//        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+//            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+//                Text("Tapped Point:")
+//                Text("LAT: $lat")
+//                Text("LNG: $lng")
+//                pointElevation.value?.let {
+//                    Text("Elevation: ${it.roundToInt()}m AMSL")
+//                }
+//                distance?.let {
+//                    var dist = BigDecimal(it).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+//                    Text("Distance from you: $dist km")
+//                }
+//                bearing?.let {
+//                    val normalizedBearing = if (bearing >= 0) bearing else 360 + bearing
+//                    val brg = normalizedBearing.roundToInt()
+//
+//                    Text("Bearing from you: $brg deg T")
+//                }
+//                userElevation.let {
+//                    val relative = if (userElevation.value != null) pointElevation.value!! - userElevation.value!! else 0.0;
+//                    var rel = BigDecimal(relative).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+//
+//                    Text("Relative elevation: $rel m")
+//                }
+//            }
+//        }
+//    }
 
     @Composable
     fun MapStyleBottomSheet() {

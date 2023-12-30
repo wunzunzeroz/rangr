@@ -1,5 +1,6 @@
 package com.rangr.map
 
+import android.graphics.Bitmap
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
@@ -20,6 +21,8 @@ import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.extension.style.terrain.generated.setTerrain
 import com.mapbox.maps.extension.style.terrain.generated.terrain
 import com.mapbox.maps.plugin.PuckBearing
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.*
 import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener
@@ -42,12 +45,10 @@ class MapboxController(private val mapView: MapView) {
     private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
         mapView.mapboxMap.setCamera(CameraOptions.Builder().bearing(it).build())
     }
-
     private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
         mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
         mapView.gestures.focalPoint = mapView.mapboxMap.pixelForCoordinate(it)
     }
-
     private val onMoveListener = object : OnMoveListener {
         override fun onMoveBegin(detector: MoveGestureDetector) {
             onCameraTrackingDismissed()
@@ -60,10 +61,53 @@ class MapboxController(private val mapView: MapView) {
         override fun onMoveEnd(detector: MoveGestureDetector) {}
     }
 
-    companion object {
-        private const val SOURCE = "TERRAIN_SOURCE"
-        private const val SKY_LAYER = "sky"
-        private const val TERRAIN_URL_TILE_RESOURCE = "mapbox://mapbox.mapbox-terrain-dem-v1"
+    private lateinit var pointAnnotationManager: PointAnnotationManager
+    private lateinit var lineAnnotationManager: PolylineAnnotationManager
+
+    fun onMapReady() {
+        mapView.mapboxMap.setCamera(
+            CameraOptions.Builder().zoom(14.0).build()
+        )
+
+        val annotationApi = mapView.annotations
+        pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        lineAnnotationManager = annotationApi.createPolylineAnnotationManager()
+
+        mapView.mapboxMap.loadStyle(
+            Style.OUTDOORS
+        ) {
+            initLocationComponent()
+            setupGesturesListener()
+        }
+    }
+
+    fun renderRoute(route: List<Point>?, bitmap: Bitmap) {
+        if (route == null) {
+            return
+        }
+
+        route.forEach { renderPoint(it, bitmap) }
+
+        renderLine(route)
+
+    }
+
+    private fun renderPoint(point: Point, bitmap: Bitmap) {
+        val pointAnnotationOptions: PointAnnotationOptions =
+            PointAnnotationOptions().withPoint(point).withIconImage(bitmap)
+
+        pointAnnotationManager.create(pointAnnotationOptions)
+    }
+
+    private fun renderLine(route: List<Point>) {
+        val polylineAnnotationOptions: PolylineAnnotationOptions =
+            PolylineAnnotationOptions()
+                .withPoints(route)
+                .withLineColor("#FF4F00")
+                .withLineWidth(5.0)
+                .withDraggable(false)
+
+        lineAnnotationManager.create(polylineAnnotationOptions)
     }
 
     fun SetTopographicStyle() {
@@ -75,23 +119,17 @@ class MapboxController(private val mapView: MapView) {
             "https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/layer=52324/EPSG:3857/{z}/{x}/{y}.png"
 
         mapView.mapboxMap.loadStyle(Style.OUTDOORS) {
-            it.addSource(
-                rasterDemSource("TERRAIN_SOURCE") {
-                    url(TERRAIN_URL_TILE_RESOURCE)
-                }
-            )
-            it.addSource(
-                rasterSource("LINZ_TOPO_50") {
-                    tiles(listOf(topo50Url))
-                    tileSize(128)
-                }
-            )
-            it.addSource(
-                rasterSource("LINZ_TOPO_250") {
-                    tiles(listOf(topo250Url))
-                    tileSize(128)
-                }
-            )
+            it.addSource(rasterDemSource("TERRAIN_SOURCE") {
+                url(TERRAIN_URL_TILE_RESOURCE)
+            })
+            it.addSource(rasterSource("LINZ_TOPO_50") {
+                tiles(listOf(topo50Url))
+                tileSize(128)
+            })
+            it.addSource(rasterSource("LINZ_TOPO_250") {
+                tiles(listOf(topo250Url))
+                tileSize(128)
+            })
             it.setTerrain(
                 terrain("TERRAIN_SOURCE")
             )
@@ -114,32 +152,27 @@ class MapboxController(private val mapView: MapView) {
     fun SetCoastguardStyle() {
         mapView.mapboxMap.loadStyle("mapbox://styles/mttchpmn/clqdc2n38000z01pxhfng95g8")
     }
+
     fun SetNauticalStyle() {
 
         var apiKey = BuildConfig.LINZ_API_KEY
 
         mapView.mapboxMap.loadStyle(Style.OUTDOORS) {
-            it.addSource(
-                rasterDemSource("TERRAIN_SOURCE") {
-                    url(TERRAIN_URL_TILE_RESOURCE)
-                }
-            )
-            it.addSource(
-                rasterSource("LINZ_MARINE") {
-                    tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4758/EPSG:3857/{z}/{x}/{y}.png"))
-                    tileSize(128)
-                    minzoom(2)
-                    maxzoom(18)
-                }
-            )
-            it.addSource(
-                rasterSource("LINZ_MARINE_SOUTH") {
-                    tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4759/EPSG:3857/{z}/{x}/{y}.png"))
-                    tileSize(128)
-                    minzoom(2)
-                    maxzoom(18)
-                }
-            )
+            it.addSource(rasterDemSource("TERRAIN_SOURCE") {
+                url(TERRAIN_URL_TILE_RESOURCE)
+            })
+            it.addSource(rasterSource("LINZ_MARINE") {
+                tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4758/EPSG:3857/{z}/{x}/{y}.png"))
+                tileSize(128)
+                minzoom(2)
+                maxzoom(18)
+            })
+            it.addSource(rasterSource("LINZ_MARINE_SOUTH") {
+                tiles(listOf("https://tiles-cdn.koordinates.com/services;key=${apiKey}/tiles/v4/set=4759/EPSG:3857/{z}/{x}/{y}.png"))
+                tileSize(128)
+                minzoom(2)
+                maxzoom(18)
+            })
             it.setTerrain(
                 terrain("TERRAIN_SOURCE")
             )
@@ -171,19 +204,6 @@ class MapboxController(private val mapView: MapView) {
             +atmosphere { }
             +projection(ProjectionName.GLOBE)
         })
-    }
-
-    fun OnMapReady() {
-        mapView.mapboxMap.setCamera(
-            CameraOptions.Builder().zoom(14.0).build()
-        )
-
-        mapView.mapboxMap.loadStyle(
-            Style.OUTDOORS
-        ) {
-            initLocationComponent()
-            setupGesturesListener()
-        }
     }
 
     fun SetMapRotation(enabled: Boolean) {
@@ -229,16 +249,14 @@ class MapboxController(private val mapView: MapView) {
 
         return withContext(Dispatchers.IO) {
             try {
-                val url = "https://data.linz.govt.nz/services/query/v1/raster.json?layer=51768&y=$lat&x=$lon&key=$linzApiKey"
+                val url =
+                    "https://data.linz.govt.nz/services/query/v1/raster.json?layer=51768&y=$lat&x=$lon&key=$linzApiKey"
 
                 val response: HttpResponse = client.get(url)
                 val jsonObject = JSONObject(response.bodyAsText())
 
 
-                val bands = jsonObject
-                    .getJSONObject("rasterQuery")
-                    .getJSONObject("layers")
-                    .getJSONObject("51768")
+                val bands = jsonObject.getJSONObject("rasterQuery").getJSONObject("layers").getJSONObject("51768")
                     .getJSONArray("bands")
 
                 val elevation = bands.getJSONObject(0).getDouble("value")
@@ -278,6 +296,17 @@ class MapboxController(private val mapView: MapView) {
         mapView.location.removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         mapView.location.removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
         mapView.gestures.removeOnMoveListener(onMoveListener)
+    }
+
+    fun clearRoute() {
+        pointAnnotationManager.deleteAll()
+        lineAnnotationManager.deleteAll()
+    }
+
+    companion object {
+        private const val SOURCE = "TERRAIN_SOURCE"
+        private const val SKY_LAYER = "sky"
+        private const val TERRAIN_URL_TILE_RESOURCE = "mapbox://mapbox.mapbox-terrain-dem-v1"
     }
 
 }
