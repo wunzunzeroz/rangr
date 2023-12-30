@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
+import com.mapbox.maps.MapView
 import com.mapbox.turf.TurfConstants
 import com.mapbox.turf.TurfMeasurement
 import com.rangr.BuildConfig
@@ -21,11 +22,17 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class MapViewModel : ViewModel() {
+    private lateinit var _mapController: MapboxController
+    private lateinit var _mapView: MapView
+
     private var _tappedLocation = MutableLiveData<Point>()
     val tappedLocation = _tappedLocation
 
     private var _mapState = MutableLiveData<MapState>(MapState.Viewing)
     val mapState = _mapState
+
+    private var _mapStyle = MutableLiveData<MapStyle>(MapStyle.Outdoors)
+    val mapStyle = _mapStyle
 
     private var _route = MutableLiveData<List<Point>>(emptyList())
     val route = _route
@@ -34,6 +41,11 @@ class MapViewModel : ViewModel() {
     val routeDistance = _routeDistance
 
     init {
+    }
+
+    fun setMapView(mapView: MapView) {
+        _mapView = mapView
+        _mapController = MapboxController(mapView)
     }
 
     suspend fun getUserLocation(): Point? = suspendCoroutine { continuation ->
@@ -132,4 +144,8 @@ class MapViewModel : ViewModel() {
 
 enum class MapState {
     Viewing, Routing
+}
+
+enum class MapStyle {
+    Outdoors, Satellite, Topographic, Marine
 }

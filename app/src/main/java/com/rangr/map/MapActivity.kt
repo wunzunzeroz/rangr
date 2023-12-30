@@ -26,13 +26,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.*
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.rangr.R
 import kotlinx.coroutines.launch
@@ -43,9 +44,8 @@ class MapActivity : ComponentActivity() {
 
     private lateinit var locationPermissionHelper: LocationPermissionHelper
     private lateinit var mapView: MapView
-    private lateinit var mapController: MapboxController
-    private lateinit var pointAnnotationManager: PointAnnotationManager
-    private lateinit var lineAnnotationManager: PolylineAnnotationManager
+    private lateinit var mapController: MapboxController // TODO - Remove
+    private lateinit var pointAnnotationManager: PointAnnotationManager // TODO - Remove
 
     private var hasRotationEnabled: Boolean = false
 
@@ -55,22 +55,14 @@ class MapActivity : ComponentActivity() {
         mapView = MapView(this)
         mapController = MapboxController(mapView)
 
+        model.setMapView(mapView)
+
         mapController.ScrollToLocation(168.0, -44.7)
         mapController.SetMapStyle(Style.OUTDOORS)
         mapController.SetMapRotation(hasRotationEnabled)
 
         val annotationApi = mapView.annotations
         pointAnnotationManager = annotationApi.createPointAnnotationManager()
-        lineAnnotationManager = annotationApi.createPolylineAnnotationManager()
-
-        val lineString = LineString.fromLngLats(model.route.value!!)
-        val polylineAnnotationOptions: PolylineAnnotationOptions = PolylineAnnotationOptions()
-            .withPoints(model.route.value!!)
-            .withLineColor("#b3fffc")
-            .withLineWidth(5.0)
-            .withDraggable(false)
-// Add the resulting line to the map.
-        lineAnnotationManager.create(polylineAnnotationOptions)
 
         setContent { MainScreen(mapView = mapView) }
 
@@ -184,22 +176,36 @@ class MapActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     private fun ViewingScreen() {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Spacer(modifier = Modifier.height(32.dp))
-            MapActionButton(
-                icon = Icons.Filled.Layers,
-                onClick = {
-                },
-                contentDescription = "Select map style",
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            LocateUserButton()
-            Spacer(modifier = Modifier.height(8.dp))
-            ToggleRotateButton()
+        val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+        val coroutineScope = rememberCoroutineScope()
+
+        ModalBottomSheetLayout(sheetState = sheetState, sheetContent = { MapStyleBottomSheet() },
+            sheetBackgroundColor = Color.Black,
+            sheetContentColor = Color(0xFFFF4F00),
+            ) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                Spacer(modifier = Modifier.height(32.dp))
+                MapActionButton(
+                    icon = Icons.Filled.Layers,
+                    onClick = {
+                              coroutineScope.launch { sheetState.show() }
+                    },
+                    contentDescription = "Select map style",
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                LocateUserButton()
+                Spacer(modifier = Modifier.height(8.dp))
+                ToggleRotateButton()
+            }
         }
 
+    }
+
+    private fun showMapTypeBottomSheet() {
+        TODO("Not yet implemented")
     }
 
     @Composable
@@ -228,7 +234,7 @@ class MapActivity : ComponentActivity() {
                     model.clearRoute()
                     mapController.clearRoute()
                 }) {
-                   Text("Clear Route")
+                    Text("Clear Route")
                 }
             }
         }
@@ -336,6 +342,7 @@ class MapActivity : ComponentActivity() {
                     }
 
                     "TOPOGRAPHIC" -> {
+                        println("SET TOPO")
                         mapController.SetTopographicStyle()
                     }
                 }
