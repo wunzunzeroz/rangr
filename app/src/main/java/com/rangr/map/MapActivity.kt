@@ -30,10 +30,6 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
-import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.rangr.R
 import kotlinx.coroutines.launch
@@ -46,7 +42,6 @@ class MapActivity : ComponentActivity() {
 
     private lateinit var mapView: MapView // TODO - Move to view model
     private lateinit var mapController: MapboxController // TODO - Remove
-    private lateinit var pointAnnotationManager: PointAnnotationManager // TODO - Remove
 
     private var hasRotationEnabled: Boolean = false // TODO - Move to view model
 
@@ -57,13 +52,11 @@ class MapActivity : ComponentActivity() {
         mapController = MapboxController(mapView)
 
         model.setMapView(mapView)
+        model.setTapIcon(loadTapMarker())
 
         mapController.ScrollToLocation(168.0, -44.7)
         mapController.SetMapStyle(Style.OUTDOORS)
         mapController.SetMapRotation(hasRotationEnabled)
-
-        val annotationApi = mapView.annotations // TODO - Move to model/controller
-        pointAnnotationManager = annotationApi.createPointAnnotationManager() // TODO - Move to model/controller
 
         setContent { MainScreen(mapView = mapView) }
 
@@ -72,7 +65,7 @@ class MapActivity : ComponentActivity() {
             mapController.onMapReady()
         }
 
-        model.route.observe(this) { mapController.renderRoute(it, getBitmap()) }
+        model.route.observe(this) { mapController.renderRoute(it, loadTapMarker()) }
     }
 
 
@@ -92,12 +85,11 @@ class MapActivity : ComponentActivity() {
         MAP_STYLE_SELECTION, LOCATION_DETAILS
     }
 
-    fun getBitmap(): Bitmap {
+    private fun loadTapMarker(): Bitmap {
         val bitmap = BitmapFactory.decodeResource(resources, R.drawable.tap_marker)
         return Bitmap.createScaledBitmap(bitmap, 50, 50, false)
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun MainScreen(mapView: MapView) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -117,7 +109,7 @@ class MapActivity : ComponentActivity() {
         LaunchedEffect(sheetState) {
             snapshotFlow { sheetState.isVisible }.collect { isVisible ->
                 if (!isVisible) {
-                    pointAnnotationManager.deleteAll() // Clear the symbols when the bottom sheet is hidden
+                    model.deleteTapPoint()
                 }
             }
         }
@@ -131,11 +123,7 @@ class MapActivity : ComponentActivity() {
                 mapView.mapboxMap.addOnMapClickListener {
                     tappedPoint = it
 
-                    val bitmap = BitmapFactory.decodeResource(resources, R.drawable.tap_marker)
-                    val resized = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
-                    val pointAnnotationOptions: PointAnnotationOptions =
-                        PointAnnotationOptions().withPoint(it).withIconImage(resized)
-                    pointAnnotationManager.create(pointAnnotationOptions)
+                    model.renderTapPoint(it)
 
                     coroutineScope.launch { sheetState.show() }
 

@@ -1,10 +1,12 @@
 package com.rangr.map
 
+import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.turf.TurfConstants
 import com.mapbox.turf.TurfMeasurement
 import com.rangr.BuildConfig
@@ -40,7 +42,12 @@ class MapViewModel : ViewModel() {
     private var _routeDistance = MutableLiveData<Double>(0.0)
     val routeDistance = _routeDistance
 
-    init {
+    lateinit var tapMarker: Bitmap
+    private var _tappedPoint: PointAnnotation? = null
+
+
+    fun setTapIcon(bitmap: Bitmap) {
+        tapMarker = bitmap
     }
 
     fun setMapView(mapView: MapView) {
@@ -100,7 +107,21 @@ class MapViewModel : ViewModel() {
 
     fun createWaypoint(tappedPoint: Point) {
         _mapState.value = MapState.Viewing
+        // TODO
     }
+
+    fun renderTapPoint(point: Point) {
+        val pointAnnotation = _mapController.renderPoint(point, tapMarker)
+        _tappedPoint = pointAnnotation
+    }
+
+    fun deleteTapPoint() {
+        if (_tappedPoint == null) {
+            return
+        }
+        _mapController.deletePoint(_tappedPoint!!)
+    }
+
 
     fun addToRoute(tappedPoint: Point) {
         println("CREATE ROUTE")

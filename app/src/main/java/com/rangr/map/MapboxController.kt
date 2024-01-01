@@ -64,14 +64,16 @@ class MapboxController(private val mapView: MapView) {
     private lateinit var pointAnnotationManager: PointAnnotationManager
     private lateinit var lineAnnotationManager: PolylineAnnotationManager
 
+    init {
+        val annotationApi = mapView.annotations
+        pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        lineAnnotationManager = annotationApi.createPolylineAnnotationManager()
+    }
+
     fun onMapReady() {
         mapView.mapboxMap.setCamera(
             CameraOptions.Builder().zoom(14.0).build()
         )
-
-        val annotationApi = mapView.annotations
-        pointAnnotationManager = annotationApi.createPointAnnotationManager()
-        lineAnnotationManager = annotationApi.createPolylineAnnotationManager()
 
         mapView.mapboxMap.loadStyle(
             Style.OUTDOORS
@@ -92,19 +94,20 @@ class MapboxController(private val mapView: MapView) {
 
     }
 
-    private fun renderPoint(point: Point, bitmap: Bitmap) {
+    fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {
         val pointAnnotationOptions: PointAnnotationOptions =
             PointAnnotationOptions().withPoint(point).withIconImage(bitmap)
 
-        pointAnnotationManager.create(pointAnnotationOptions)
+        return pointAnnotationManager.create(pointAnnotationOptions)
+    }
+
+    fun deletePoint(point: PointAnnotation) {
+        pointAnnotationManager.delete(point)
     }
 
     private fun renderLine(route: List<Point>) {
         val polylineAnnotationOptions: PolylineAnnotationOptions =
-            PolylineAnnotationOptions()
-                .withPoints(route)
-                .withLineColor("#FF4F00")
-                .withLineWidth(5.0)
+            PolylineAnnotationOptions().withPoints(route).withLineColor("#FF4F00").withLineWidth(5.0)
                 .withDraggable(false)
 
         lineAnnotationManager.create(polylineAnnotationOptions)
