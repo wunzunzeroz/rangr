@@ -31,6 +31,10 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
+import com.patrykandpatrick.vico.compose.chart.Chart
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.rangr.R
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -177,30 +181,41 @@ class MapActivity : ComponentActivity() {
     private fun RoutingScreen() {
         val route by model.route.observeAsState(emptyList())
         val distance by model.routeDistance.observeAsState(0.0)
+        val elevation by model.routeElevationPoints.observeAsState(emptyList<Double>())
 
         val legs = route.count() - 1
+
+        val chartProducer = model.routeElevationProducer
 
         Box(
             modifier = Modifier
                 .background(color = Color.Black)
                 .fillMaxWidth()
         ) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
-                ) {
-                    Text("ACTIVE ROUTE", color = Color.White)
-                    Text("LEGS: $legs", color = Color(0xFFFF4F00))
-                    Text("DISTANCE: $distance m", color = Color(0xFFFF4F00))
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Button(onClick = {
-                    model.clearRoute()
-                    mapController.clearRoute()
-                }) {
-                    Text("Clear Route")
+            Column {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
+                    ) {
+                        Text("ACTIVE ROUTE", color = Color.White)
+                        Text("LEGS: $legs", color = Color(0xFFFF4F00))
+                        Text("DISTANCE: $distance m", color = Color(0xFFFF4F00))
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(onClick = {
+                        model.clearRoute()
+                        mapController.clearRoute()
+                    }) {
+                        Text("Clear Route")
+                    }
                 }
             }
+            Chart(
+                chart = lineChart(spacing = 1.dp),
+                chartModelProducer = chartProducer,
+                startAxis = rememberStartAxis(),
+                bottomAxis = rememberBottomAxis(),
+            )
         }
 
     }

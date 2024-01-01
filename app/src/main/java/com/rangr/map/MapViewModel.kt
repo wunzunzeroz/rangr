@@ -3,18 +3,27 @@ package com.rangr.map
 import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mapbox.common.location.*
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.turf.TurfConstants
+import com.mapbox.turf.TurfConversion
 import com.mapbox.turf.TurfMeasurement
+import com.mapbox.turf.TurfMisc
+import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.BuildConfig
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.math.BigDecimal
@@ -42,9 +51,13 @@ class MapViewModel : ViewModel() {
     private var _routeDistance = MutableLiveData<Double>(0.0)
     val routeDistance = _routeDistance
 
+    private var _routeElevationPoints = MutableLiveData<List<Double>>(emptyList())
+    val routeElevationPoints = _routeElevationPoints
+
+    var routeElevationProducer = ChartEntryModelProducer()
+
     lateinit var tapMarker: Bitmap
     private var _tappedPoint: PointAnnotation? = null
-
 
     fun setTapIcon(bitmap: Bitmap) {
         tapMarker = bitmap
@@ -136,15 +149,110 @@ class MapViewModel : ViewModel() {
         _mapState.value = MapState.Viewing
     }
 
+//    fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double): List<Point> {
+//        val lineString = LineString.fromLngLats(waypoints)
+//
+//        val intervalKilometers = intervalMeters / 1000.0
+//
+//        val slicedLine = TurfMisc.lineSliceAlong(lineString, 0.0, intervalKilometers, "kilometers")
+//
+//        return slicedLine.coordinates()
+//    }
+private fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double): List<Point> {
+        if (waypoints.size < 2) {
+            return waypoints
+        }
+
+        val lineString = LineString.fromLngLats(waypoints)
+        val totalLength = TurfMeasurement.length(lineString, "kilometers")
+        val intervalKilometers = intervalMeters / 1000.0
+
+        val detailedPoints = mutableListOf<Point>()
+        var traveledDistance = 0.0
+
+        while (traveledDistance <= totalLength) {
+            val segment = TurfMisc.lineSliceAlong(lineString, traveledDistance, traveledDistance + intervalKilometers, "kilometers")
+            detailedPoints.add(segment.coordinates()[0]) // Add the start point of each segment
+            traveledDistance += intervalKilometers
+        }
+
+        // Check if the last point is added, if not, add it
+        if (detailedPoints.last() != waypoints.last()) {
+            detailedPoints.add(waypoints.last())
+        }
+
+        return detailedPoints
+    }
+
+
+    private fun updateRouteElevation() {
+        viewModelScope.launch {
+            println("UPDATE ELE")
+
+            if (route.value.isNullOrEmpty()) {
+                return@launch
+            }
+
+            if (route.value!!.size < 2) {
+                return@launch // Need at least 2 coords to slice route
+            }
+
+//            val explodedRoute = explodeRoute(route.value!!)
+            val explodedRoute = getPointsAlongRoute(route.value!!, 250.0)
+
+            if (explodedRoute.isNullOrEmpty()) {
+                return@launch
+            }
+
+            println("EXPLODED COUNT: ${explodedRoute.size}")
+
+            val elevations = explodedRoute.mapNotNull {
+                _mapController.getElevation(it.latitude(), it.longitude())
+            }
+
+            _routeElevationPoints.value = elevations
+
+
+            val entries = elevations.map {
+                entryOf(elevations.indexOf(it), it)
+            }
+            routeElevationProducer.setEntries(entries)
+        }
+
+
+    }
+
     private fun addPointToRoute(point: Point) {
-        val route = _route.value ?: emptyList()
-        val newRoute = route + point
+        viewModelScope.launch {
+            val elevation = _mapController.getElevation(point.latitude(), point.longitude())
+            println("ELEVATION: $elevation")
 
-        val routeDistance = calculateRouteDistance(newRoute)
-        val dist = BigDecimal(routeDistance).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+            if (elevation != null) {
+                val ele = _routeElevationPoints.value ?: emptyList()
+                val newEle = ele + elevation
 
-        _route.value = newRoute
-        _routeDistance.value = dist
+                _routeElevationPoints.value = newEle
+            }
+
+            val route = _route.value ?: emptyList()
+            val newRoute = route + point
+
+            val routeDistance = calculateRouteDistance(newRoute)
+            val dist = BigDecimal(routeDistance).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+
+            _route.value = newRoute
+            _routeDistance.value = dist
+            updateRouteElevation()
+        }
+//        val route = _route.value ?: emptyList()
+//        val newRoute = route + point
+//
+//
+//        val routeDistance = calculateRouteDistance(newRoute)
+//        val dist = BigDecimal(routeDistance).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+//
+//        _route.value = newRoute
+//        _routeDistance.value = dist
     }
 
     private fun calculateRouteDistance(route: List<Point>): Double {
