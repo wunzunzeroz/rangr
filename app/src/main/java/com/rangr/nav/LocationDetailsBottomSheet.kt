@@ -1,4 +1,4 @@
-package com.rangr.map
+package com.rangr.nav
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button

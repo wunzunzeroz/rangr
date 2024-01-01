@@ -1,4 +1,4 @@
-package com.rangr.map
+package com.rangr.nav
 
 import android.graphics.Bitmap
 import com.mapbox.android.gestures.MoveGestureDetector

@@ -1,4 +1,4 @@
-package com.rangr.map
+package com.rangr.nav
 
 import android.app.Activity
 import android.widget.Toast
