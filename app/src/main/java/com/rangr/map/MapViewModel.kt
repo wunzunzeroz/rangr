@@ -31,8 +31,8 @@ class MapViewModel : ViewModel() {
 //        TODO("Not yet implemented")
     }
 
-    fun scrollToUserLocation() {
-        TODO("Not yet implemented")
+    suspend fun scrollToUserLocation() {
+        _mapboxService.panToUserLocation()
     }
 
     fun toggleMapRotation() {

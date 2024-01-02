@@ -1,6 +1,9 @@
 package com.rangr.map
 
 import android.graphics.Bitmap
+import com.mapbox.common.location.*
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.atmosphere.generated.atmosphere
@@ -16,11 +19,23 @@ import com.mapbox.maps.extension.style.sources.generated.rasterSource
 import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.extension.style.terrain.generated.setTerrain
 import com.mapbox.maps.extension.style.terrain.generated.terrain
+import com.mapbox.maps.plugin.PuckBearing
+import com.mapbox.maps.plugin.gestures.gestures
+import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
+import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
+import com.mapbox.maps.plugin.locationcomponent.location
 import com.rangr.BuildConfig
 import com.rangr.map.models.MapType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class MapboxService(mapView: MapView) {
     private val _mapView: MapView
+    private val _serviceScope = CoroutineScope(Dispatchers.IO)
 
     init {
         _mapView = mapView
@@ -28,14 +43,62 @@ class MapboxService(mapView: MapView) {
 
     fun initialise() {
         setMapType(MapType.Outdoor)
-        panToUserLocation()
+        initLocationTracking()
+//        panToUserLocation()
     }
+
+    fun onDestroy() {
+        _mapView.location.removeOnIndicatorPositionChangedListener(_onIndicatorPositionChangedListener)
+    }
+
+    private fun initLocationTracking() {
+        val locationComponent = _mapView.location
+        locationComponent.updateSettings {
+            puckBearing = PuckBearing.COURSE
+            puckBearingEnabled = true
+            enabled = true
+            locationPuck = createDefault2DPuck(withBearing = true)
+        }
+        locationComponent.addOnIndicatorPositionChangedListener(_onIndicatorPositionChangedListener)
+
+    }
+
+    suspend fun getUserLocation(): Point? = suspendCoroutine { continuation ->
+        val locationService: LocationService = LocationServiceFactory.getOrCreate()
+        var locationProvider: DeviceLocationProvider? = null
+
+        val request = LocationProviderRequest.Builder()
+            .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
+            .displacement(0F).accuracy(AccuracyLevel.HIGHEST).build()
+
+        val result = locationService.getDeviceLocationProvider(request)
+        if (!result.isValue) {
+            continuation.resumeWithException(RuntimeException("Unable to get device location provider"))
+            return@suspendCoroutine
+        }
+        locationProvider = result.value
+
+        locationProvider?.getLastLocation { lastLocation ->
+            if (lastLocation == null) {
+                continuation.resume(null)
+            }
+            continuation.resume(Point.fromLngLat(lastLocation!!.longitude, lastLocation.latitude))
+        }
+    }
+
+    suspend fun panToUserLocation() {
+            val userLocation = getUserLocation()
+
+            userLocation?.let {
+                _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
+            }
+
+    }
+
 
     fun getMapView(): MapView {
         return _mapView
     }
-
-    fun panToUserLocation() {}
 
     fun setTapIcon(icon: Bitmap) {
 
@@ -140,6 +203,11 @@ class MapboxService(mapView: MapView) {
             +atmosphere { }
             +projection(ProjectionName.GLOBE)
         })
+    }
+
+    private val _onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
+        _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
+        _mapView.gestures.focalPoint = _mapView.mapboxMap.pixelForCoordinate(it)
     }
 
     companion object {

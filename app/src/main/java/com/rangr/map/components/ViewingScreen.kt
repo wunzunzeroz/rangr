@@ -9,8 +9,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -41,11 +40,7 @@ fun ViewingScreen(model: MapViewModel) {
                     contentDescription = "Select map style",
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                MapActionButton(
-                    icon = Icons.Filled.MyLocation,
-                    onClick = { model.scrollToUserLocation() },
-                    contentDescription = "My location"
-                )
+                LocateUserButton(model = model)
                 Spacer(modifier = Modifier.height(8.dp))
                 MapActionButton(
                     icon = Icons.Filled.Refresh,
@@ -56,4 +51,18 @@ fun ViewingScreen(model: MapViewModel) {
         }
     }
 
+}
+
+@Composable fun LocateUserButton(model: MapViewModel) {
+    var buttonClicked by remember { mutableStateOf(false) }
+
+    MapActionButton(icon = Icons.Filled.MyLocation, onClick = { buttonClicked = true }, contentDescription = "My location")
+
+    if (buttonClicked) {
+        LaunchedEffect(Unit) {
+            model.scrollToUserLocation()
+            buttonClicked = false
+        }
+    }
+    
 }
