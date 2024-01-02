@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MapViewContainer(model: MapViewModel) {
-    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.HalfExpanded)
     var tappedPoint by remember { mutableStateOf<Point?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val mapView = model.getMapView()
@@ -36,6 +36,7 @@ fun MapViewContainer(model: MapViewModel) {
     ) {
         AndroidView({ mapView }) { mapView ->
             mapView.mapboxMap.addOnMapClickListener {
+                println("MAP TAPPED")
                 tappedPoint = it
 
                 model.addTapPoint(it)

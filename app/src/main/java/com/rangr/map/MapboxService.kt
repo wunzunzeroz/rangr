@@ -225,14 +225,14 @@ class MapboxService(mapView: MapView) {
         TODO("Not yet implemented")
     }
 
-    private fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {
+    fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {
         val pointAnnotationOptions: PointAnnotationOptions =
             PointAnnotationOptions().withPoint(point).withIconImage(bitmap)
 
         return pointAnnotationManager.create(pointAnnotationOptions)
     }
 
-    private fun deletePoint(point: PointAnnotation) {
+    fun deletePoint(point: PointAnnotation) {
         pointAnnotationManager.delete(point)
     }
 

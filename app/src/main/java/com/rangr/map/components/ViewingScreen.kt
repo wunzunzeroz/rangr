@@ -22,6 +22,39 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
+fun ViewingScreen2(model: MapViewModel) {
+    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val coroutineScope = rememberCoroutineScope()
+
+    ModalBottomSheetLayout(
+        sheetState = sheetState, sheetContent = { MapTypeSheet(model) },
+        sheetBackgroundColor = Color.Black,
+        sheetContentColor = Color(0xFFFF4F00),
+    ) {
+        Box {
+            MapViewContainer(model)
+            Column(modifier = Modifier.padding(8.dp)) {
+                Spacer(modifier = Modifier.height(32.dp))
+                MapActionButton(
+                    icon = Icons.Filled.Layers,
+                    onClick = {
+                        coroutineScope.launch { sheetState.show() }
+                    },
+                    contentDescription = "Select map style",
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                LocateUserButton(model)
+                Spacer(modifier = Modifier.height(8.dp))
+                ToggleRotationButton(model)
+            }
+
+        }
+    }
+
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
 fun ViewingScreen(model: MapViewModel) {
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()

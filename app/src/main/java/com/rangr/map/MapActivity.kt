@@ -13,6 +13,7 @@ import com.mapbox.maps.MapView
 import com.rangr.R
 import com.rangr.map.components.RoutingScreen
 import com.rangr.map.components.ViewingScreen
+import com.rangr.map.components.ViewingScreen2
 import com.rangr.nav.LocationPermissionHelper
 import com.rangr.nav.MapState
 import java.lang.ref.WeakReference
@@ -47,7 +48,7 @@ class MapActivity : ComponentActivity() {
 
         when (state) {
             MapState.Viewing -> ViewingScreen(model)
-            MapState.Routing -> RoutingScreen(model)
+            MapState.Routing -> ViewingScreen2(model)
             null -> ViewingScreen(model)
         }
     }

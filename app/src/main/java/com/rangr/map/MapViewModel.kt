@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.map.models.MapType
@@ -22,6 +23,8 @@ class MapViewModel : ViewModel() {
 
     private var _mapRotationEnabled = MutableLiveData(false)
     val mapRotationEnabled = _mapRotationEnabled
+
+    private var _tapPointRef: PointAnnotation? = null
 
     private var _route = MutableLiveData(Route.empty())
     val route = _route
@@ -46,6 +49,8 @@ class MapViewModel : ViewModel() {
     }
 
     suspend fun addToRoute(waypoint: Point) {
+        _mapState.value = MapState.Routing
+
         _routeRepository.updateRoute(waypoint)
         val newRoute = _routeRepository.getRoute()
         _route.value = newRoute
@@ -82,9 +87,17 @@ class MapViewModel : ViewModel() {
     }
 
     fun addTapPoint(tappedPoint: Point) {
+        val point = _mapboxService.renderPoint(tappedPoint, _tapIcon)
+
+        _tapPointRef = point
     }
 
     fun deleteTapPoint() {
+        if (_tapPointRef == null) {
+            return
+        }
+
+        _mapboxService.deletePoint(_tapPointRef!!)
     }
 
     fun createWaypoint(tappedPoint: Point) {
