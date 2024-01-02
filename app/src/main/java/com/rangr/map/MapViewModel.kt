@@ -1,6 +1,7 @@
 package com.rangr.map
 
 import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.geojson.Point
@@ -13,6 +14,9 @@ class MapViewModel : ViewModel() {
 
     private var _mapState = MutableLiveData(MapState.Viewing)
     val mapState = _mapState
+
+    private var _mapRotationEnabled = MutableLiveData(false)
+    val mapRotationEnabled = _mapRotationEnabled
     
     fun initialise(mapboxService: MapboxService) {
         _mapboxService = mapboxService
@@ -36,7 +40,17 @@ class MapViewModel : ViewModel() {
     }
 
     fun toggleMapRotation() {
-        TODO("Not yet implemented")
+        val isRotationEnabled = _mapRotationEnabled.value ?: false
+
+        if (isRotationEnabled) {
+            _mapboxService.enableRotation()
+            _mapRotationEnabled.value = false
+
+        } else {
+            _mapboxService.disableRotation()
+            _mapRotationEnabled.value = true
+
+        }
     }
 
     fun addTapPoint(tappedPoint: Point) {

@@ -28,7 +28,6 @@ import com.rangr.BuildConfig
 import com.rangr.map.models.MapType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -87,11 +86,11 @@ class MapboxService(mapView: MapView) {
     }
 
     suspend fun panToUserLocation() {
-            val userLocation = getUserLocation()
+        val userLocation = getUserLocation()
 
-            userLocation?.let {
-                _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
-            }
+        userLocation?.let {
+            _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
+        }
 
     }
 
@@ -203,6 +202,14 @@ class MapboxService(mapView: MapView) {
             +atmosphere { }
             +projection(ProjectionName.GLOBE)
         })
+    }
+
+    fun enableRotation() {
+        _mapView.gestures.rotateEnabled = true
+    }
+
+    fun disableRotation() {
+        _mapView.gestures.rotateEnabled = false
     }
 
     private val _onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
