@@ -146,7 +146,7 @@ class MapViewModel : ViewModel() {
         _mapState.value = MapState.Viewing
     }
 
-//    fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double): List<Point> {
+    //    fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double): List<Point> {
 //        val lineString = LineString.fromLngLats(waypoints)
 //
 //        val intervalKilometers = intervalMeters / 1000.0
@@ -155,7 +155,7 @@ class MapViewModel : ViewModel() {
 //
 //        return slicedLine.coordinates()
 //    }
-private fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double): List<Point> {
+    private fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double): List<Point> {
         if (waypoints.size < 2) {
             return waypoints
         }
@@ -168,7 +168,12 @@ private fun getPointsAlongRoute(waypoints: List<Point>, intervalMeters: Double):
         var traveledDistance = 0.0
 
         while (traveledDistance <= totalLength) {
-            val segment = TurfMisc.lineSliceAlong(lineString, traveledDistance, traveledDistance + intervalKilometers, "kilometers")
+            val segment = TurfMisc.lineSliceAlong(
+                lineString,
+                traveledDistance,
+                traveledDistance + intervalKilometers,
+                "kilometers"
+            )
             detailedPoints.add(segment.coordinates()[0]) // Add the start point of each segment
             traveledDistance += intervalKilometers
         }

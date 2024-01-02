@@ -3,7 +3,9 @@ package com.rangr.map.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,6 +19,9 @@ fun LocationDetailsBottomSheet(tappedPoint: Point?, mapViewModel: MapViewModel) 
     if (tappedPoint == null ) {
         return
     }
+    var buttonClicked by remember { mutableStateOf(false) }
+
+
 
     val lat = BigDecimal(tappedPoint.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
     val lng = BigDecimal(tappedPoint.longitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
@@ -29,10 +34,17 @@ fun LocationDetailsBottomSheet(tappedPoint: Point?, mapViewModel: MapViewModel) 
                 Button(onClick = { mapViewModel.createWaypoint(tappedPoint) }, modifier = Modifier.padding(8.dp)) {
                     Text("Create Waypoint")
                 }
-                Button(onClick = { mapViewModel.addToRoute(tappedPoint) }, modifier = Modifier.padding(8.dp)) {
+                Button(onClick = {buttonClicked = true}, modifier = Modifier.padding(8.dp)) {
                     Text("Add to Route")
                 }
             }
+        }
+    }
+
+    if (buttonClicked) {
+        LaunchedEffect(Unit) {
+            mapViewModel.addToRoute(tappedPoint)
+            buttonClicked = false
         }
     }
 }

@@ -16,48 +16,43 @@ import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.rangr.map.MapViewModel
+import com.rangr.map.models.Route
 
 
 @Composable
 fun RoutingScreen(model: MapViewModel) {
-//    val route by model.route.observeAsState(emptyList())
-//    val distance by model.routeDistance.observeAsState(0.0)
-//    val elevation by model.routeElevationPoints.observeAsState(emptyList<Double>())
-//
-//    val legs = route.count() - 1
-//
-//    val chartProducer = model.routeElevationProducer
-//
-//    Box(
-//        modifier = Modifier
-//            .background(color = Color.Black)
-//            .fillMaxWidth()
-//    ) {
-//        Column {
-//            Row(modifier = Modifier.fillMaxWidth()) {
-//                Column(
-//                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
-//                ) {
+    val route by model.route.observeAsState(Route.empty())
+
+    val chartProducer = model.routeProfile
+
+    Box(
+        modifier = Modifier
+            .background(color = Color.Black)
+            .fillMaxWidth()
+    ) {
+        Column {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
+                ) {
 //                    Text("ACTIVE ROUTE", color = Color.White)
-//                    Text("LEGS: $legs", color = Color(0xFFFF4F00))
-//                    Text("DISTANCE: $distance m", color = Color(0xFFFF4F00))
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                Button(onClick = {
-//                    model.clearRoute()
-//                    mapController.clearRoute()
-//                }) {
-//                    Text("Clear Route")
-//                }
-//            }
-//        }
-//        Chart(
-//            chart = lineChart(spacing = 1.dp),
-//            chartModelProducer = chartProducer,
-//            startAxis = rememberStartAxis(),
-//            bottomAxis = rememberBottomAxis(),
-//        )
-//    }
-//
+                    Text("DISTANCE: ${route.distance} m", color = Color(0xFFFF4F00))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Button(onClick = {
+                    model.clearRoute()
+                }) {
+                    Text("Clear Route")
+                }
+            }
+        }
+        Chart(
+            chart = lineChart(spacing = 1.dp),
+            chartModelProducer = chartProducer,
+            startAxis = rememberStartAxis(),
+            bottomAxis = rememberBottomAxis(),
+        )
+    }
+
 }
 

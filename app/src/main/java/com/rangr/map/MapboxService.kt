@@ -20,12 +20,15 @@ import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.extension.style.terrain.generated.setTerrain
 import com.mapbox.maps.extension.style.terrain.generated.terrain
 import com.mapbox.maps.plugin.PuckBearing
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.*
 import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.rangr.BuildConfig
 import com.rangr.map.models.MapType
+import com.rangr.map.models.Route
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.resume
@@ -34,16 +37,21 @@ import kotlin.coroutines.suspendCoroutine
 
 class MapboxService(mapView: MapView) {
     private val _mapView: MapView
-    private val _serviceScope = CoroutineScope(Dispatchers.IO)
+
+    private lateinit var pointAnnotationManager: PointAnnotationManager
+    private lateinit var lineAnnotationManager: PolylineAnnotationManager
 
     init {
         _mapView = mapView
+
+        val annotations = mapView.annotations
+        pointAnnotationManager = annotations.createPointAnnotationManager()
+        lineAnnotationManager = annotations.createPolylineAnnotationManager()
     }
 
     fun initialise() {
         setMapType(MapType.Outdoor)
         initLocationTracking()
-//        panToUserLocation()
     }
 
     fun onDestroy() {
@@ -94,13 +102,8 @@ class MapboxService(mapView: MapView) {
 
     }
 
-
     fun getMapView(): MapView {
         return _mapView
-    }
-
-    fun setTapIcon(icon: Bitmap) {
-
     }
 
     fun setMapType(type: MapType) {
@@ -211,6 +214,36 @@ class MapboxService(mapView: MapView) {
     fun disableRotation() {
         _mapView.gestures.rotateEnabled = false
     }
+
+    fun renderRoute(route: Route, marker: Bitmap) {
+        route.waypoints.forEach { renderPoint(it, marker) }
+
+        renderLine(route.waypoints)
+    }
+
+    fun clearRoute() {
+        TODO("Not yet implemented")
+    }
+
+    private fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {
+        val pointAnnotationOptions: PointAnnotationOptions =
+            PointAnnotationOptions().withPoint(point).withIconImage(bitmap)
+
+        return pointAnnotationManager.create(pointAnnotationOptions)
+    }
+
+    private fun deletePoint(point: PointAnnotation) {
+        pointAnnotationManager.delete(point)
+    }
+
+    private fun renderLine(route: List<Point>) {
+        val polylineAnnotationOptions: PolylineAnnotationOptions =
+            PolylineAnnotationOptions().withPoints(route).withLineColor("#FF4F00").withLineWidth(5.0)
+                .withDraggable(false)
+
+        lineAnnotationManager.create(polylineAnnotationOptions)
+    }
+
 
     private val _onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
         _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
