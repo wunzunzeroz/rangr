@@ -15,11 +15,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MapViewContainer(mapView: MapView, model: MapViewModel, onMapTap: (Point) -> Unit) {
-
+fun MapViewContainer(model: MapViewModel) {
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     var tappedPoint by remember { mutableStateOf<Point?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val mapView = model.getMapView()
 
     LaunchedEffect(sheetState) {
         snapshotFlow { sheetState.isVisible }.collect { isVisible ->

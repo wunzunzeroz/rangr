@@ -13,7 +13,9 @@ import com.mapbox.maps.MapView
 import com.rangr.R
 import com.rangr.map.components.RoutingScreen
 import com.rangr.map.components.ViewingScreen
+import com.rangr.nav.LocationPermissionHelper
 import com.rangr.nav.MapState
+import java.lang.ref.WeakReference
 
 class MapActivity : ComponentActivity() {
     private val model: MapViewModel by viewModels()
@@ -22,8 +24,13 @@ class MapActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val mapView = MapView(this)
+        val mapController = MapboxService(mapView)
 
-        model.initialise(mapView)
+        val locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
+        locationPermissionHelper.checkPermissions {
+            model.initialise(mapController)
+        }
+
         model.setTapIcon(loadTapMarker())
 
         setContent { MainScreen() }

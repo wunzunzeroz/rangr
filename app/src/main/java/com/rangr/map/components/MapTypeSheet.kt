@@ -32,19 +32,19 @@ fun ListItem(style: String, model: MapViewModel) {
         onClick = {
             when (style) {
                 "OUTDOORS" -> {
-                    model.SetMapType(MapType.Outdoor)
+                    model.setMapType(MapType.Outdoor)
                 }
 
                 "SATELLITE" -> {
-                    model.SetMapType(MapType.Satellite)
+                    model.setMapType(MapType.Satellite)
                 }
 
                 "MARINE" -> {
-                    model.SetMapType(MapType.Marine)
+                    model.setMapType(MapType.Marine)
                 }
 
                 "TOPOGRAPHIC" -> {
-                    model.SetMapType(MapType.Topographic)
+                    model.setMapType(MapType.Topographic)
                 }
             }
         },

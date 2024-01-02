@@ -1,9 +1,6 @@
 package com.rangr.map.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -32,19 +29,30 @@ fun ViewingScreen(model: MapViewModel) {
         sheetBackgroundColor = Color.Black,
         sheetContentColor = Color(0xFFFF4F00),
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Spacer(modifier = Modifier.height(32.dp))
-            MapActionButton(
-                icon = Icons.Filled.Layers,
-                onClick = {
-                    coroutineScope.launch { sheetState.show() }
-                },
-                contentDescription = "Select map style",
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            MapActionButton(icon = Icons.Filled.MyLocation, onClick = {model.scrollToUserLocation()}, contentDescription = "My location")
-            Spacer(modifier = Modifier.height(8.dp))
-            MapActionButton(icon = Icons.Filled.Refresh, onClick = {model.toggleMapRotation()}, contentDescription = "Toggle rotation")
+        Box {
+            MapViewContainer(model)
+            Column(modifier = Modifier.padding(8.dp)) {
+                Spacer(modifier = Modifier.height(32.dp))
+                MapActionButton(
+                    icon = Icons.Filled.Layers,
+                    onClick = {
+                        coroutineScope.launch { sheetState.show() }
+                    },
+                    contentDescription = "Select map style",
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                MapActionButton(
+                    icon = Icons.Filled.MyLocation,
+                    onClick = { model.scrollToUserLocation() },
+                    contentDescription = "My location"
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                MapActionButton(
+                    icon = Icons.Filled.Refresh,
+                    onClick = { model.toggleMapRotation() },
+                    contentDescription = "Toggle rotation"
+                )
+            }
         }
     }
 
