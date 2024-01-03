@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import com.mapbox.maps.MapView
 import com.rangr.R
@@ -62,6 +63,13 @@ class MapActivity : ComponentActivity() {
                 sheetState.show()
             } else {
                 sheetState.hide()
+            }
+        }
+        LaunchedEffect(sheetState) {
+            snapshotFlow { sheetState.isVisible }.collect { isVisible ->
+                if (!isVisible) {
+                    model.onBottomSheetDismissed()
+                }
             }
         }
 

@@ -50,9 +50,6 @@ class MapViewModel : ViewModel() {
         _tapIcon = icon
     }
 
-    fun setTappedPoint(point: Point) {
-        _tappedPoint.value = point
-    }
 
     fun setBottomSheetVisible(visible: Boolean) {
         _isBottomSheetVisible.value = visible
@@ -109,6 +106,8 @@ class MapViewModel : ViewModel() {
     }
 
     fun addTapPoint(tappedPoint: Point) {
+        _tappedPoint.value = tappedPoint
+
         val point = _mapboxService.renderPoint(tappedPoint, _tapIcon)
 
         _tapPointRef = point
@@ -129,4 +128,8 @@ class MapViewModel : ViewModel() {
         _mapboxService.setMapType(type)
     }
 
+    fun onBottomSheetDismissed() {
+        setBottomSheetVisible(false)
+        deleteTapPoint()
+    }
 }

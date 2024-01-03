@@ -1,6 +1,7 @@
 package com.rangr.map
 
 import android.graphics.Bitmap
+import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.common.location.*
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -22,6 +23,7 @@ import com.mapbox.maps.extension.style.terrain.generated.terrain
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.*
+import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
@@ -67,6 +69,7 @@ class MapboxService(mapView: MapView) {
             locationPuck = createDefault2DPuck(withBearing = true)
         }
         locationComponent.addOnIndicatorPositionChangedListener(_onIndicatorPositionChangedListener)
+        _mapView.gestures.addOnMoveListener(onMoveListener)
 
     }
 
@@ -248,6 +251,23 @@ class MapboxService(mapView: MapView) {
     private val _onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
         _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
         _mapView.gestures.focalPoint = _mapView.mapboxMap.pixelForCoordinate(it)
+    }
+
+    private val onMoveListener = object : OnMoveListener {
+        override fun onMoveBegin(detector: MoveGestureDetector) {
+            onCameraTrackingDismissed()
+        }
+
+        override fun onMove(detector: MoveGestureDetector): Boolean {
+            return false
+        }
+
+        override fun onMoveEnd(detector: MoveGestureDetector) {}
+    }
+
+    private fun onCameraTrackingDismissed() {
+        _mapView.location.removeOnIndicatorPositionChangedListener(_onIndicatorPositionChangedListener)
+        _mapView.gestures.removeOnMoveListener(onMoveListener)
     }
 
     companion object {
