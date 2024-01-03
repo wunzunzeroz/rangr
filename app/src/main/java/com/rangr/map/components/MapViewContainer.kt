@@ -30,7 +30,7 @@ fun MapViewContainer(model: MapViewModel) {
     }
 
     ModalBottomSheetLayout(
-        sheetState = sheetState, sheetContent = { LocationDetailsBottomSheet(tappedPoint = tappedPoint, mapViewModel = model)},
+        sheetState = sheetState, sheetContent = { LocationDetailsBottomSheet(mapViewModel = model)},
         sheetBackgroundColor = Color.Black,
         sheetContentColor = Color(0xFFFF4F00),
     ) {

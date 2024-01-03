@@ -10,6 +10,7 @@ import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.map.models.MapType
 import com.rangr.map.models.Route
+import com.rangr.map.models.SheetType
 import com.rangr.nav.MapState
 
 class MapViewModel : ViewModel() {
@@ -21,8 +22,17 @@ class MapViewModel : ViewModel() {
     private var _mapState = MutableLiveData(MapState.Viewing)
     val mapState = _mapState
 
+    private var _isBottomSheetVisible = MutableLiveData(false)
+    val isBottomSheetVisible = _isBottomSheetVisible
+
+    private var _sheetType = MutableLiveData(SheetType.LocationDetail)
+    val sheetType = _sheetType
+
     private var _mapRotationEnabled = MutableLiveData(false)
     val mapRotationEnabled = _mapRotationEnabled
+
+    private var _tappedPoint = MutableLiveData<Point?>(null)
+    val tappedPoint = _tappedPoint
 
     private var _tapPointRef: PointAnnotation? = null
 
@@ -38,6 +48,18 @@ class MapViewModel : ViewModel() {
 
     fun setTapIcon(icon: Bitmap) {
         _tapIcon = icon
+    }
+
+    fun setTappedPoint(point: Point) {
+        _tappedPoint.value = point
+    }
+
+    fun setBottomSheetVisible(visible: Boolean) {
+        _isBottomSheetVisible.value = visible
+    }
+
+    fun setBottomSheetType(type: SheetType) {
+        _sheetType.value = type
     }
 
     fun getMapView(): MapView {

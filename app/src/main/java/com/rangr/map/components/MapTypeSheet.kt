@@ -15,7 +15,7 @@ import com.rangr.map.MapViewModel
 import com.rangr.map.models.MapType
 
 @Composable
-fun MapTypeSheet(model: MapViewModel) {
+fun MapTypeBottomSheet(model: MapViewModel) {
     val mapStyles = listOf("OUTDOORS", "SATELLITE", "MARINE", "TOPOGRAPHIC")
 
     LazyColumn {

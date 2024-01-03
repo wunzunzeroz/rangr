@@ -6,6 +6,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -15,23 +16,26 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Composable
-fun LocationDetailsBottomSheet(tappedPoint: Point?, mapViewModel: MapViewModel) {
-    if (tappedPoint == null ) {
+fun LocationDetailsBottomSheet(mapViewModel: MapViewModel) {
+    val tappedPoint = mapViewModel.tappedPoint.observeAsState(null)
+
+    if (tappedPoint.value == null ) {
         return
     }
+
+    val tp = tappedPoint.value!!
+
     var buttonClicked by remember { mutableStateOf(false) }
 
-
-
-    val lat = BigDecimal(tappedPoint.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-    val lng = BigDecimal(tappedPoint.longitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+    val lat = BigDecimal(tp.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
+    val lng = BigDecimal(tp.longitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text("TAPPED POINT")
             Text("LAT: $lat, LNG: $lng")
             Row {
-                Button(onClick = { mapViewModel.createWaypoint(tappedPoint) }, modifier = Modifier.padding(8.dp)) {
+                Button(onClick = { mapViewModel.createWaypoint(tp) }, modifier = Modifier.padding(8.dp)) {
                     Text("Create Waypoint")
                 }
                 Button(onClick = {buttonClicked = true}, modifier = Modifier.padding(8.dp)) {
@@ -43,7 +47,7 @@ fun LocationDetailsBottomSheet(tappedPoint: Point?, mapViewModel: MapViewModel) 
 
     if (buttonClicked) {
         LaunchedEffect(Unit) {
-            mapViewModel.addToRoute(tappedPoint)
+            mapViewModel.addToRoute(tp)
             buttonClicked = false
         }
     }
