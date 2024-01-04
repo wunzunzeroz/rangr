@@ -16,9 +16,9 @@ import com.rangr.map.models.SheetType
 
 
 @Composable
-fun ViewingScreen(model: MapViewModel) {
+fun ViewingScreen(model: MapViewModel, mapView: @Composable () -> Unit) {
     Box {
-        MapViewContainer(model)
+        mapView()
         Column(modifier = Modifier.padding(8.dp)) {
             Spacer(modifier = Modifier.height(32.dp))
             MapActionButton(
@@ -36,7 +36,6 @@ fun ViewingScreen(model: MapViewModel) {
         }
 
     }
-
 }
 
 @Composable

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import com.mapbox.maps.MapView
 import com.rangr.R
 import com.rangr.map.components.BottomSheetContent
+import com.rangr.map.components.MapViewContainer
 import com.rangr.map.components.RoutingScreen
 import com.rangr.map.components.ViewingScreen
 import com.rangr.nav.LocationPermissionHelper
@@ -73,6 +74,8 @@ class MapActivity : ComponentActivity() {
             }
         }
 
+        val mapView = MapViewContainer(model)
+
         ModalBottomSheetLayout(
             sheetState = sheetState,
             sheetContent = { BottomSheetContent(model) },
@@ -81,8 +84,8 @@ class MapActivity : ComponentActivity() {
         ) {
             Box {
                 when (mapState) {
-                    MapState.Viewing, null -> ViewingScreen(model)
-                    MapState.Routing -> RoutingScreen(model)
+                    MapState.Viewing, null -> ViewingScreen(model, { mapView })
+                    MapState.Routing -> RoutingScreen(model, { mapView })
                 }
             }
         }

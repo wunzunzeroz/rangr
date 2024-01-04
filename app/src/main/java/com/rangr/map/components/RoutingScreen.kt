@@ -19,36 +19,36 @@ import com.rangr.map.models.Route
 
 
 @Composable
-fun RoutingScreen(model: MapViewModel) {
+fun RoutingScreen(model: MapViewModel, mapView: @Composable () -> Unit) {
     val route by model.route.observeAsState(Route.empty())
 
     val chartProducer = model.routeProfile
 
     Box {
-        MapViewContainer(model)
-//        Column(modifier = Modifier.height(50.dp)) {
-//            Text(text = "ROUTING")
-//            Row(modifier = Modifier.fillMaxWidth()) {
-//                Column(
-//                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
-//                ) {
-////                    Text("ACTIVE ROUTE", color = Color.White)
-//                    Text("DISTANCE: ${route.distance} m", color = Color(0xFFFF4F00))
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//                Button(onClick = {
-//                    model.clearRoute()
-//                }) {
-//                    Text("Clear Route")
-//                }
-//            }
-//            Chart(
-//                chart = lineChart(spacing = 1.dp),
-//                chartModelProducer = chartProducer,
-//                startAxis = rememberStartAxis(),
-//                bottomAxis = rememberBottomAxis(),
-//            )
-//        }
+        mapView()
+        Column(modifier = Modifier.height(50.dp)) {
+            Text(text = "ROUTING")
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
+                ) {
+//                    Text("ACTIVE ROUTE", color = Color.White)
+                    Text("DISTANCE: ${route.distance} m", color = Color(0xFFFF4F00))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Button(onClick = {
+                    model.clearRoute()
+                }) {
+                    Text("Clear Route")
+                }
+            }
+            Chart(
+                chart = lineChart(spacing = 1.dp),
+                chartModelProducer = chartProducer,
+                startAxis = rememberStartAxis(),
+                bottomAxis = rememberBottomAxis(),
+            )
+        }
     }
 
 }

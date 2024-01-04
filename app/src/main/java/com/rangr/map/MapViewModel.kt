@@ -68,18 +68,19 @@ class MapViewModel : ViewModel() {
     }
 
     suspend fun addToRoute(waypoint: Point) {
+        println("ADD TO ROUTE")
         _mapState.value = MapState.Routing
-
-        _routeRepository.updateRoute(waypoint)
-        val newRoute = _routeRepository.getRoute()
-        _route.value = newRoute
-
-        var idx = 1
-        val profileEntries = newRoute.elevationProfile.map { entryOf(++idx, it.altitude()) }
-
-        routeProfile.setEntries(profileEntries)
-
-        _mapboxService.renderRoute(newRoute, _tapIcon)
+//
+//        _routeRepository.updateRoute(waypoint)
+//        val newRoute = _routeRepository.getRoute()
+//        _route.value = newRoute
+//
+//        var idx = 1
+//        val profileEntries = newRoute.elevationProfile.map { entryOf(++idx, it.altitude()) }
+//
+//        routeProfile.setEntries(profileEntries)
+//
+//        _mapboxService.renderRoute(newRoute, _tapIcon)
     }
 
     fun clearRoute() {

@@ -16,20 +16,13 @@ import java.math.RoundingMode
 
 @Composable
 fun LocationDetailBottomSheet(mapViewModel: MapViewModel) {
-    println("HELLO SIR!!")
     val tappedPoint = mapViewModel.tappedPoint.observeAsState(null)
-//
-//    if (tappedPoint.value == null) {
-//        return
-//    }
-//
     val tp = tappedPoint.value
-//
+
     var buttonClicked by remember { mutableStateOf(false) }
 
-
     Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("TAPPED POINT")
+        Text("TAPPED POINT ON MAP")
         tp.let {
             if (tp != null) {
                 val lat = BigDecimal(tp.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
@@ -52,6 +45,7 @@ fun LocationDetailBottomSheet(mapViewModel: MapViewModel) {
     if (buttonClicked) {
         LaunchedEffect(Unit) {
             if (tp != null) {
+                println("TAPPED ADD TO ROUTE")
                 mapViewModel.addToRoute(tp)
                 buttonClicked = false
             }

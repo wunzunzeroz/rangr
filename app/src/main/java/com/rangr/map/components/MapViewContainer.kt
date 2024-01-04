@@ -1,6 +1,5 @@
 package com.rangr.map.components
 
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.geojson.Point
@@ -13,14 +12,6 @@ fun MapViewContainer(model: MapViewModel) {
     var tappedPoint by remember { mutableStateOf<Point?>(null) }
     val mapView = model.getMapView()
 
-//    LaunchedEffect(sheetState) {
-//        snapshotFlow { sheetState.isVisible }.collect { isVisible ->
-//            if (!isVisible) {
-//                model.deleteTapPoint()
-//            }
-//        }
-//    }
-//
     AndroidView({ mapView }) { mapView ->
         mapView.mapboxMap.addOnMapClickListener {
             println("MAP TAPPED")
