@@ -2,24 +2,22 @@ package com.rangr.map.components
 
 import android.app.Activity
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.rangr.map.MapViewModel
 import com.rangr.map.models.Route
+import com.rangr.ui.theme.RangrDark
+import com.rangr.ui.theme.RangrOrange
 import com.rangr.util.Utils
 import java.lang.ref.WeakReference
 
@@ -33,29 +31,35 @@ fun RoutingScreen(model: MapViewModel) {
     val chartProducer = model.routeProfile
 
     Box {
-        MapViewContainer(model)
-        Column(modifier = Modifier.height(50.dp)) {
-            Text(text = "ROUTING")
-            Row(modifier = Modifier.fillMaxWidth()) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RangrDark)
+                    .padding(8.dp)
+            ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(8.dp),
                 ) {
-//                    Text("ACTIVE ROUTE", color = Color.White)
-                    Text("DISTANCE: $dist m", color = Color(0xFFFF4F00))
+                    Text("ROUTE: $dist m", fontSize = 5.em, color = RangrOrange)
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Button(onClick = {
-                    model.clearRoute()
-                }) {
-                    Text("Clear Route")
-                }
+                TextButton(
+                    text = "CLEAR",
+                    onClick = {
+                        model.clearRoute()
+                    },
+                )
             }
-            Chart(
-                chart = lineChart(spacing = 1.dp),
-                chartModelProducer = chartProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
-            )
+            MapViewContainer(model)
+//            Chart(
+//                chart = lineChart(spacing = 1.dp),
+//                chartModelProducer = chartProducer,
+//                startAxis = rememberStartAxis(),
+//                bottomAxis = rememberBottomAxis(),
+//            )
         }
     }
 

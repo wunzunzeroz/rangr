@@ -1,15 +1,13 @@
 package com.rangr.map.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -21,22 +19,29 @@ fun LocationDetailBottomSheet(mapViewModel: MapViewModel) {
 
     var buttonClicked by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("TAPPED POINT ON MAP")
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .height(150.dp)
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("POINT", fontSize = 4.em)
+        Spacer(modifier = Modifier.height(20.dp))
         tp.let {
             if (tp != null) {
                 val lat = BigDecimal(tp.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
                 val lng = BigDecimal(tp.longitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
 
-                Text("LAT: $lat, LNG: $lng")
+                Text("LATITUDE: $lat")
+                Text("LONGITUDE: $lng")
 
-                Row {
-                    Button(onClick = { mapViewModel.createWaypoint(tp) }, modifier = Modifier.padding(8.dp)) {
-                        Text("Create Waypoint")
-                    }
-                    Button(onClick = { buttonClicked = true }, modifier = Modifier.padding(8.dp)) {
-                        Text("Add to Route")
-                    }
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    TextButton(text = "CREATE WAYPOINT", onClick = { mapViewModel.createWaypoint(tp) })
+                    TextButton(text = "ADD TO ROUTE", onClick = { buttonClicked = true })
                 }
             }
         }

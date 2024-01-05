@@ -24,6 +24,8 @@ import com.rangr.map.components.LocationPermissionHelper
 import com.rangr.map.components.RoutingScreen
 import com.rangr.map.components.ViewingScreen
 import com.rangr.map.models.MapState
+import com.rangr.ui.theme.RangrDark
+import com.rangr.ui.theme.RangrOrange
 import java.lang.ref.WeakReference
 
 class MapActivity : ComponentActivity() {
@@ -77,8 +79,8 @@ class MapActivity : ComponentActivity() {
         ModalBottomSheetLayout(
             sheetState = sheetState,
             sheetContent = { BottomSheetContent(model) },
-            sheetBackgroundColor = Color.Black,
-            sheetContentColor = Color(0xFFFF4F00),
+            sheetBackgroundColor = RangrDark,
+            sheetContentColor = RangrOrange,
         ) {
             Box {
                 when (mapState) {
