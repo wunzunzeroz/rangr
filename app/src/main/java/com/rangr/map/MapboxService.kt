@@ -225,7 +225,7 @@ class MapboxService(mapView: MapView) {
     }
 
     fun clearRoute() {
-        TODO("Not yet implemented")
+
     }
 
     fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {

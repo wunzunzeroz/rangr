@@ -7,6 +7,7 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.map.models.MapState
 import com.rangr.map.models.MapType
 import com.rangr.map.models.Route
@@ -69,17 +70,17 @@ class MapViewModel : ViewModel() {
     suspend fun addToRoute(waypoint: Point) {
         println("ADD TO ROUTE")
         _mapState.value = MapState.Routing
-//
-//        _routeRepository.updateRoute(waypoint)
-//        val newRoute = _routeRepository.getRoute()
-//        _route.value = newRoute
-//
-//        var idx = 1
-//        val profileEntries = newRoute.elevationProfile.map { entryOf(++idx, it.altitude()) }
-//
-//        routeProfile.setEntries(profileEntries)
-//
-//        _mapboxService.renderRoute(newRoute, _tapIcon)
+
+        _routeRepository.updateRoute(waypoint)
+        val newRoute = _routeRepository.getRoute()
+        _route.value = newRoute
+
+        var idx = 1
+        val profileEntries = newRoute.elevationProfile.map { entryOf(++idx, it.altitude()) }
+
+        routeProfile.setEntries(profileEntries)
+
+        _mapboxService.renderRoute(newRoute, _tapIcon)
     }
 
     fun clearRoute() {
