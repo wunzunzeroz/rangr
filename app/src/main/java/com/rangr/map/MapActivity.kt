@@ -42,8 +42,8 @@ class MapActivity : ComponentActivity() {
             model.initialise(mapController)
         }
 
-        model.setTapIcon(orangeMarker())
-        model.setRouteIcon(blueMarker())
+        model.setTapIcon(blueMarker())
+        model.setRouteIcon(orangeMarker())
 
         setContent { MainScreen(model) }
     }

@@ -85,6 +85,8 @@ class MapViewModel : ViewModel() {
         routeProfile.setEntries(profileEntries)
 
         _mapboxService.renderRoute(newRoute, _routeIcon)
+
+        deleteTapPoint()
     }
 
     fun clearRoute() {
