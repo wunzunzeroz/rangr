@@ -245,7 +245,7 @@ class MapboxService(mapView: MapView) {
                 .withDraggable(false)
 
         val innerLine: PolylineAnnotationOptions =
-            PolylineAnnotationOptions().withPoints(route).withLineColor("#009FFD").withLineWidth(3.0)
+            PolylineAnnotationOptions().withPoints(route).withLineColor("#FF4F00").withLineWidth(3.0)
                 .withDraggable(false)
 
         lineAnnotationManager.create(outerLine)

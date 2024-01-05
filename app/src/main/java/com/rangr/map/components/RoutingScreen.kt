@@ -28,6 +28,7 @@ fun RoutingScreen(model: MapViewModel) {
 
     val dist = Utils.RoundNumberToDp(route.distance, 1)
 
+    val distance = getDistance(route.distance)
     val chartProducer = model.routeProfile
 
     Box {
@@ -43,7 +44,7 @@ fun RoutingScreen(model: MapViewModel) {
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier.padding(8.dp),
                 ) {
-                    Text("ROUTE: $dist m", fontSize = 5.em, color = RangrOrange)
+                    Text("ROUTE: $distance", fontSize = 5.em, color = RangrOrange)
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 TextButton(
@@ -62,7 +63,16 @@ fun RoutingScreen(model: MapViewModel) {
 //            )
         }
     }
+}
 
+private fun getDistance(rawDistance: Double): String {
+    val dist = Utils.RoundNumberToDp(rawDistance, 1)
+
+    return if (dist > 1000) {
+        "${Utils.RoundNumberToDp(dist / 1000, 1)} km"
+    } else {
+        "$dist m"
+    }
 }
 
 class LocationPermissionHelper(val activityRef: WeakReference<Activity>) {
