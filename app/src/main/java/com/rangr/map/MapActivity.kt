@@ -20,9 +20,9 @@ import androidx.compose.ui.graphics.Color
 import com.mapbox.maps.MapView
 import com.rangr.R
 import com.rangr.map.components.BottomSheetContent
+import com.rangr.map.components.LocationPermissionHelper
 import com.rangr.map.components.RoutingScreen
 import com.rangr.map.components.ViewingScreen
-import com.rangr.map.components.LocationPermissionHelper
 import com.rangr.map.models.MapState
 import java.lang.ref.WeakReference
 
@@ -40,7 +40,8 @@ class MapActivity : ComponentActivity() {
             model.initialise(mapController)
         }
 
-        model.setTapIcon(getTapIcon())
+        model.setTapIcon(orangeMarker())
+        model.setRouteIcon(blueMarker())
 
         setContent { MainScreen(model) }
     }
@@ -89,8 +90,19 @@ class MapActivity : ComponentActivity() {
 
     }
 
-    private fun getTapIcon(): Bitmap {
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.tap_marker)
+    private fun orangeMarker(): Bitmap {
+        return resizeBitmap(BitmapFactory.decodeResource(resources, R.drawable.marker_orange))
+    }
+
+    private fun blueMarker(): Bitmap {
+        return resizeBitmap(BitmapFactory.decodeResource(resources, R.drawable.marker_blue))
+    }
+
+    private fun greenMarker(): Bitmap {
+        return resizeBitmap(BitmapFactory.decodeResource(resources, R.drawable.marker_green))
+    }
+
+    private fun resizeBitmap(bitmap: Bitmap): Bitmap {
         return Bitmap.createScaledBitmap(bitmap, 50, 50, false)
     }
 }

@@ -18,6 +18,7 @@ class MapViewModel : ViewModel() {
     private lateinit var _mapboxService: MapboxService
 
     private lateinit var _tapIcon: Bitmap
+    private lateinit var _routeIcon: Bitmap
 
     private var _mapState = MutableLiveData(MapState.Viewing)
     val mapState = _mapState
@@ -50,6 +51,9 @@ class MapViewModel : ViewModel() {
         _tapIcon = icon
     }
 
+    fun setRouteIcon(icon: Bitmap) {
+        _routeIcon = icon
+    }
 
     fun setBottomSheetVisible(visible: Boolean) {
         _isBottomSheetVisible.value = visible
@@ -80,7 +84,7 @@ class MapViewModel : ViewModel() {
 
         routeProfile.setEntries(profileEntries)
 
-        _mapboxService.renderRoute(newRoute, _tapIcon)
+        _mapboxService.renderRoute(newRoute, _routeIcon)
     }
 
     fun clearRoute() {
@@ -135,4 +139,5 @@ class MapViewModel : ViewModel() {
         setBottomSheetVisible(false)
         deleteTapPoint()
     }
+
 }

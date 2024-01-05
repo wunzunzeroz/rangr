@@ -240,11 +240,16 @@ class MapboxService(mapView: MapView) {
     }
 
     private fun renderLine(route: List<Point>) {
-        val polylineAnnotationOptions: PolylineAnnotationOptions =
-            PolylineAnnotationOptions().withPoints(route).withLineColor("#FF4F00").withLineWidth(5.0)
+        val outerLine: PolylineAnnotationOptions =
+            PolylineAnnotationOptions().withPoints(route).withLineColor("#1B2F33").withLineWidth(7.0)
                 .withDraggable(false)
 
-        lineAnnotationManager.create(polylineAnnotationOptions)
+        val innerLine: PolylineAnnotationOptions =
+            PolylineAnnotationOptions().withPoints(route).withLineColor("#009FFD").withLineWidth(3.0)
+                .withDraggable(false)
+
+        lineAnnotationManager.create(outerLine)
+        lineAnnotationManager.create(innerLine)
     }
 
 
