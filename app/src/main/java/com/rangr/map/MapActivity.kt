@@ -22,8 +22,8 @@ import com.rangr.R
 import com.rangr.map.components.BottomSheetContent
 import com.rangr.map.components.RoutingScreen
 import com.rangr.map.components.ViewingScreen
-import com.rangr.nav.LocationPermissionHelper
-import com.rangr.nav.MapState
+import com.rangr.map.components.LocationPermissionHelper
+import com.rangr.map.models.MapState
 import java.lang.ref.WeakReference
 
 class MapActivity : ComponentActivity() {

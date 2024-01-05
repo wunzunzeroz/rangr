@@ -7,11 +7,10 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import com.patrykandpatrick.vico.core.entry.entryOf
+import com.rangr.map.models.MapState
 import com.rangr.map.models.MapType
 import com.rangr.map.models.Route
 import com.rangr.map.models.SheetType
-import com.rangr.nav.MapState
 
 class MapViewModel : ViewModel() {
     private val _routeRepository = RouteRepository()
