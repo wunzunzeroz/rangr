@@ -8,7 +8,7 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.atmosphere.generated.atmosphere
-import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.addLayerAt
 import com.mapbox.maps.extension.style.layers.generated.rasterLayer
 import com.mapbox.maps.extension.style.layers.generated.skyLayer
 import com.mapbox.maps.extension.style.layers.properties.generated.ProjectionName
@@ -139,18 +139,20 @@ class MapboxService(mapView: MapView) {
             it.setTerrain(
                 terrain("TERRAIN_SOURCE")
             )
-            it.addLayer(
+            it.addLayerAt(
                 rasterLayer("LINZ_TOPO_250_LAYER", "LINZ_TOPO_250") {
                     sourceLayer("LINZ_TOPO_250")
                     minZoom(0.0)
                     maxZoom(12.0)
                 },
+                100
             )
-            it.addLayer(
+            it.addLayerAt(
                 rasterLayer("LINZ_TOPO_50_LAYER", "LINZ_TOPO_50") {
                     sourceLayer("LINZ_TOPO_50")
                     minZoom(12.0)
                 },
+                100
             )
         }
     }
@@ -178,15 +180,17 @@ class MapboxService(mapView: MapView) {
             it.setTerrain(
                 terrain("TERRAIN_SOURCE")
             )
-            it.addLayer(
+            it.addLayerAt(
                 rasterLayer("LINZ_MARINE_LAYER", "LINZ_MARINE") {
                     sourceLayer("LINZ_MARINE")
                 },
+                50
             )
-            it.addLayer(
+            it.addLayerAt(
                 rasterLayer("LINZ_MARINE_LAYER_SOUTH", "LINZ_MARINE_SOUTH") {
                     sourceLayer("LINZ_MARINE_SOUTH")
                 },
+                50
             )
         }
     }
