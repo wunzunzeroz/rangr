@@ -20,7 +20,7 @@ fun MapActionButton(icon: ImageVector, onClick: () -> Unit, contentDescription: 
         contentPadding = PaddingValues(0.dp),
         modifier = Modifier.size(45.dp),
         colors = ButtonDefaults.buttonColors(
-            contentColor = Color(0xFFFF4F00), backgroundColor = Color.Black
+            contentColor = Color(0xFFFF4F00), backgroundColor = Color(0xFF1B2F33)
         ),
     ) {
         Icon(
