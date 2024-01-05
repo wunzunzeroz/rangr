@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.mapbox.maps.MapView
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -19,13 +20,13 @@ import com.rangr.map.models.Route
 
 
 @Composable
-fun RoutingScreen(model: MapViewModel, mapView: @Composable () -> Unit) {
+fun RoutingScreen(model: MapViewModel) {
     val route by model.route.observeAsState(Route.empty())
 
     val chartProducer = model.routeProfile
 
     Box {
-        mapView()
+        MapViewContainer(model)
         Column(modifier = Modifier.height(50.dp)) {
             Text(text = "ROUTING")
             Row(modifier = Modifier.fillMaxWidth()) {

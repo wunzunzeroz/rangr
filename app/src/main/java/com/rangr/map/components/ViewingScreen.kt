@@ -11,14 +11,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.mapbox.maps.MapView
 import com.rangr.map.MapViewModel
 import com.rangr.map.models.SheetType
 
 
 @Composable
-fun ViewingScreen(model: MapViewModel, mapView: @Composable () -> Unit) {
+fun ViewingScreen(model: MapViewModel) {
     Box {
-        mapView()
+        MapViewContainer(model)
         Column(modifier = Modifier.padding(8.dp)) {
             Spacer(modifier = Modifier.height(32.dp))
             MapActionButton(
