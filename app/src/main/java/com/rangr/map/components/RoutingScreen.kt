@@ -14,19 +14,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
-import com.mapbox.maps.MapView
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.rangr.map.MapViewModel
 import com.rangr.map.models.Route
+import com.rangr.util.Utils
 import java.lang.ref.WeakReference
 
 
 @Composable
 fun RoutingScreen(model: MapViewModel) {
     val route by model.route.observeAsState(Route.empty())
+
+    val dist = Utils.RoundNumberToDp(route.distance, 1)
 
     val chartProducer = model.routeProfile
 
@@ -39,7 +41,7 @@ fun RoutingScreen(model: MapViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)
                 ) {
 //                    Text("ACTIVE ROUTE", color = Color.White)
-                    Text("DISTANCE: ${route.distance} m", color = Color(0xFFFF4F00))
+                    Text("DISTANCE: $dist m", color = Color(0xFFFF4F00))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(onClick = {

@@ -5,6 +5,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -28,20 +29,27 @@ class ElevationService {
         val client = HttpClient(CIO)
 
         return withContext(Dispatchers.IO) {
-            try {
+            client.use { client ->
                 val query = buildQuery(points)
-                println(query)
                 val url = "https://api.open-elevation.com/api/v1/lookup?locations=$query"
 
+                println("URL: $url")
+
                 val response = client.get(url)
+
+                if (response.status != HttpStatusCode.OK)
+                {
+                    println("ERROR: Received status code ${response.status}")
+                    return@withContext emptyList()
+                }
+
+                println("RESPONSE: ${response.bodyAsText()}")
 
                 val json = JSONObject(response.bodyAsText())
 
                 val parsed = parsePoints(json.toString())
 
                 return@withContext parsed
-            } finally {
-                client.close()
             }
         }
 
@@ -54,6 +62,6 @@ class ElevationService {
     }
 
     private fun buildQuery(points: List<Point>): String {
-        return points.joinToString("|") { "${it.latitude()}, ${it.longitude()}" }
+        return points.joinToString("|") { "${it.latitude()},${it.longitude()}" }
     }
 }

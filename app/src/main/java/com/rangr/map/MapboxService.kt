@@ -31,8 +31,6 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.rangr.BuildConfig
 import com.rangr.map.models.MapType
 import com.rangr.map.models.Route
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -225,7 +223,9 @@ class MapboxService(mapView: MapView) {
     }
 
     fun clearRoute() {
-
+        // TODO - Handle so this only deletes the active route
+        lineAnnotationManager.deleteAll()
+        pointAnnotationManager.deleteAll()
     }
 
     fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {

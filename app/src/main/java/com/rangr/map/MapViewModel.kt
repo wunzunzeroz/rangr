@@ -86,6 +86,8 @@ class MapViewModel : ViewModel() {
     fun clearRoute() {
         _routeRepository.clearRoute()
         _mapboxService.clearRoute()
+
+        _mapState.value = MapState.Viewing
     }
 
     suspend fun scrollToUserLocation() {

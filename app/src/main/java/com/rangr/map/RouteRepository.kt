@@ -17,9 +17,13 @@ class RouteRepository {
     }
 
     suspend fun updateRoute(newPoint: Point) {
-       val newWaypoints = _route.waypoints + newPoint
+        val newWaypoints = _route.waypoints + newPoint
         val newDistance = computeRouteDistance(newWaypoints)
-        val elevationProfile = computeElevationProfile(newWaypoints)
+
+        // TODO - Fix and reenable elevation profile
+        // val elevationProfile = computeElevationProfile(newWaypoints)
+
+        val elevationProfile = emptyList<Point>()
 
         val newRoute = Route(newWaypoints, newDistance, elevationProfile)
 
@@ -32,8 +36,6 @@ class RouteRepository {
 
     private fun computeRouteDistance(waypoints: List<Point>): Double {
         var totalDistance = 0.0
-
-        var waypoints = _route.waypoints
 
         for (i in 0 until waypoints.size - 1) {
             val a = waypoints[i]
@@ -69,10 +71,7 @@ class RouteRepository {
 
         while (traveledDistance <= totalLength) {
             val segment = TurfMisc.lineSliceAlong(
-                lineString,
-                traveledDistance,
-                traveledDistance + intervalKilometers,
-                "kilometers"
+                lineString, traveledDistance, traveledDistance + intervalKilometers, "kilometers"
             )
             detailedPoints.add(segment.coordinates()[0]) // Add the start point of each segment
             traveledDistance += intervalKilometers
@@ -87,7 +86,7 @@ class RouteRepository {
     }
 
     private suspend fun getElevationPointsAlongRoute(points: List<Point>): List<Point> {
-       return _elevationService.addElevationToPoints(points)
+        return _elevationService.addElevationToPoints(points)
     }
 
 }
