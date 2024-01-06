@@ -4,6 +4,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("com.google.devtools.ksp")
 
 }
 
@@ -102,5 +103,13 @@ dependencies {
     implementation("com.mapbox.maps:android:11.0.0")
     implementation("com.mapbox.mapboxsdk:mapbox-sdk-turf:6.15.0")
     implementation("com.mapbox.extension:maps-compose:11.0.0")
+
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+
+    // To use Kotlin Symbol Processing (KSP)
+    ksp("androidx.room:room-compiler:$room_version")
 
 }
