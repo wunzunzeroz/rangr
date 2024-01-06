@@ -36,6 +36,8 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
     var latitude by remember { mutableDoubleStateOf(lat) }
     var longitude by remember { mutableDoubleStateOf(lon) }
 
+    var buttonClicked by remember { mutableStateOf(false) }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
             .fillMaxWidth()
@@ -49,8 +51,7 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
             onValueChange = { latitude = it.toDouble() },
             label = { Text("LAT") },
             keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
             ),
             colors = TextFieldDefaults.textFieldColors(
                 textColor = RangrOrange, // Text color
@@ -67,8 +68,7 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
             onValueChange = { latitude = it.toDouble() },
             label = { Text("LNG") },
             keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
             ),
             colors = TextFieldDefaults.textFieldColors(
                 textColor = RangrOrange, // Text color
@@ -115,9 +115,17 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
         Spacer(modifier = Modifier.height(10.dp))
 
         TextButton(text = "CREATE WAYPOINT", onClick = {
+            buttonClicked = true
+        })
+    }
+
+    if (buttonClicked) {
+        LaunchedEffect(Unit) {
             model.createWaypoint(latitude, longitude, name, description)
             model.setBottomSheetVisible(false)
             Toast.makeText(ctx, "Created waypoint successfully", Toast.LENGTH_SHORT).show()
-        })
+
+            buttonClicked = false
+        }
     }
 }

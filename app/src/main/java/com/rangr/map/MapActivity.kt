@@ -19,10 +19,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import com.mapbox.maps.MapView
 import com.rangr.R
-import com.rangr.map.components.BottomSheetContent
-import com.rangr.map.components.LocationPermissionHelper
-import com.rangr.map.components.RoutingScreen
-import com.rangr.map.components.ViewingScreen
+import com.rangr.map.components.*
 import com.rangr.map.models.MapState
 import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
@@ -86,6 +83,7 @@ class MapActivity : ComponentActivity() {
                 when (mapState) {
                     MapState.Viewing, null -> ViewingScreen(model)
                     MapState.Routing -> RoutingScreen(model)
+                    MapState.Test -> TestScreen(model)
                 }
             }
         }

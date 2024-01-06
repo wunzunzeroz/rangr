@@ -12,7 +12,6 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.data.AppDatabase
 import com.rangr.map.models.*
 import com.rangr.map.repositories.WaypointsRepository
-import kotlinx.coroutines.flow.Flow
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val _db: AppDatabase = Room.databaseBuilder(application, AppDatabase::class.java, "rangr-database").build()
@@ -136,11 +135,18 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _mapboxService.deletePoint(_tapPointRef!!)
     }
 
-    fun createWaypoint(lat: Double, lng: Double, name: String, desc: String) {
+    suspend fun createWaypoint(lat: Double, lng: Double, name: String, desc: String) {
+        val wpt = Waypoint(name = name, latitude = lat, longitude = lng, description = desc)
+
+        _waypointsRepository.saveWaypoint(wpt)
     }
 
     fun setMapType(type: MapType) {
         _mapboxService.setMapType(type)
+    }
+
+    fun setMapState(state: MapState) {
+        _mapState.value = state
     }
 
     fun onBottomSheetDismissed() {
