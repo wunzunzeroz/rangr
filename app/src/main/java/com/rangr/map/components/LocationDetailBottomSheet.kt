@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
+import com.rangr.map.models.SheetType
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -40,7 +41,9 @@ fun LocationDetailBottomSheet(mapViewModel: MapViewModel) {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    TextButton(text = "CREATE WAYPOINT", onClick = { mapViewModel.createWaypoint(tp) })
+                    TextButton(text = "CREATE WAYPOINT", onClick = {
+                        mapViewModel.setBottomSheetType(SheetType.WaypointCreation)
+                    })
                     TextButton(text = "ADD TO ROUTE", onClick = { buttonClicked = true })
                 }
             }

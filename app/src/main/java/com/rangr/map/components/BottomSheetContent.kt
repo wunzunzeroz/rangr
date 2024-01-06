@@ -10,8 +10,8 @@ fun BottomSheetContent(model: MapViewModel) {
     val sheetType = model.sheetType.observeAsState()
 
     when (sheetType.value) {
+        SheetType.MapTypeSelection, null -> MapTypeBottomSheet(model)
         SheetType.LocationDetail -> LocationDetailBottomSheet(model)
-        SheetType.MapTypeSelection -> MapTypeBottomSheet(model)
-        null -> MapTypeBottomSheet(model)
+        SheetType.WaypointCreation -> WaypointCreationBottomSheet(model)
     }
 }
