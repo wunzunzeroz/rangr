@@ -136,7 +136,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _mapboxService.deletePoint(_tapPointRef!!)
     }
 
-    fun createWaypoint(tappedPoint: Point) {
+    fun createWaypoint(lat: Double, lng: Double, name: String, desc: String) {
     }
 
     fun setMapType(type: MapType) {
