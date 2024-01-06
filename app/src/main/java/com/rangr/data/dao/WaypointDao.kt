@@ -5,18 +5,19 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.rangr.map.models.Waypoint
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WaypointDao {
     @Query("SELECT * FROM waypoint")
-    fun getAll(): List<Waypoint>
+    fun getAll(): Flow<List<Waypoint>>
 
     @Query("SELECT * FROM waypoint WHERE id = :id")
     fun getById(id: Int): Waypoint?
 
     @Insert
-    fun insert(waypoint: Waypoint)
+    suspend fun insert(waypoint: Waypoint)
 
     @Delete()
-    fun delete(waypoint: Waypoint)
+    suspend fun delete(waypoint: Waypoint)
 }

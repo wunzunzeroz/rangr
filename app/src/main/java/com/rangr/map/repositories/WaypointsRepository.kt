@@ -1,10 +1,13 @@
 package com.rangr.map.repositories
 
+import androidx.annotation.WorkerThread
 import com.rangr.data.dao.WaypointDao
 import com.rangr.map.models.Waypoint
+import kotlinx.coroutines.flow.Flow
 
 class WaypointsRepository(private val dao: WaypointDao) {
-    fun saveWaypoint(waypoint: Waypoint) {
+    @WorkerThread
+    suspend fun saveWaypoint(waypoint: Waypoint) {
         dao.insert(waypoint)
     }
 
@@ -12,11 +15,14 @@ class WaypointsRepository(private val dao: WaypointDao) {
         return dao.getById(id)
     }
 
-    fun getWaypoints(): List<Waypoint?> {
+    val allWaypoints = dao.getAll()
+
+    fun getWaypoints(): Flow<List<Waypoint?>> {
         return dao.getAll()
     }
 
-    fun deleteWaypoint(waypoint: Waypoint) {
+    @WorkerThread
+    suspend fun deleteWaypoint(waypoint: Waypoint) {
         dao.delete(waypoint)
     }
 

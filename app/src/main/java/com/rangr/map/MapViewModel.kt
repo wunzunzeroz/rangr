@@ -1,19 +1,25 @@
 package com.rangr.map
 
+import android.app.Application
 import android.graphics.Bitmap
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import androidx.room.Room
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
-import com.rangr.map.models.MapState
-import com.rangr.map.models.MapType
-import com.rangr.map.models.Route
-import com.rangr.map.models.SheetType
+import com.rangr.data.AppDatabase
+import com.rangr.map.models.*
+import com.rangr.map.repositories.WaypointsRepository
+import kotlinx.coroutines.flow.Flow
 
-class MapViewModel : ViewModel() {
+class MapViewModel(application: Application) : AndroidViewModel(application) {
+    private val _db: AppDatabase = Room.databaseBuilder(application, AppDatabase::class.java, "rangr-database").build()
+
+    private val _waypointsRepository = WaypointsRepository(_db.waypointDao())
+    val waypoints: LiveData<List<Waypoint?>> = _waypointsRepository.getWaypoints().asLiveData()
+
     private val _routeRepository = RouteRepository()
     private lateinit var _mapboxService: MapboxService
 
