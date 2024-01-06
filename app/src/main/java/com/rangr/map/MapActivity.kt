@@ -16,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import com.mapbox.maps.MapView
 import com.rangr.R
 import com.rangr.map.components.*
@@ -41,6 +40,7 @@ class MapActivity : ComponentActivity() {
 
         model.setTapIcon(blueMarker())
         model.setRouteIcon(orangeMarker())
+        model.setWaypointIcon(greenMarker())
 
         setContent { MainScreen(model) }
     }

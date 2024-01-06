@@ -31,6 +31,7 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.rangr.BuildConfig
 import com.rangr.map.models.MapType
 import com.rangr.map.models.Route
+import com.rangr.map.models.Waypoint
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -277,6 +278,14 @@ class MapboxService(mapView: MapView) {
     private fun onCameraTrackingDismissed() {
         _mapView.location.removeOnIndicatorPositionChangedListener(_onIndicatorPositionChangedListener)
         _mapView.gestures.removeOnMoveListener(onMoveListener)
+    }
+
+    fun renderWaypoint(wpt: Waypoint, icon: Bitmap): PointAnnotation {
+        val point = Point.fromLngLat(wpt.longitude, wpt.latitude)
+        val pointAnnotationOptions: PointAnnotationOptions =
+            PointAnnotationOptions().withPoint(point).withIconImage(icon)
+
+        return pointAnnotationManager.create(pointAnnotationOptions)
     }
 
     companion object {

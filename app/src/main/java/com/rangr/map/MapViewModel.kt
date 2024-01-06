@@ -24,6 +24,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     private lateinit var _tapIcon: Bitmap
     private lateinit var _routeIcon: Bitmap
+    private lateinit var _waypointIcon: Bitmap
 
     private var _mapState = MutableLiveData(MapState.Viewing)
     val mapState = _mapState
@@ -58,6 +59,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setRouteIcon(icon: Bitmap) {
         _routeIcon = icon
+    }
+
+    fun setWaypointIcon(icon: Bitmap) {
+        _waypointIcon = icon
     }
 
     fun setBottomSheetVisible(visible: Boolean) {
@@ -139,6 +144,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         val wpt = Waypoint(name = name, latitude = lat, longitude = lng, description = desc)
 
         _waypointsRepository.saveWaypoint(wpt)
+        _mapboxService.renderWaypoint(wpt, _waypointIcon)
     }
 
     fun setMapType(type: MapType) {
