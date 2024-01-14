@@ -37,10 +37,11 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class MapboxService(mapView: MapView) {
+    lateinit var onWaypointTap: (Point) -> Unit
     private val _mapView: MapView
 
-    private lateinit var pointAnnotationManager: PointAnnotationManager
-    private lateinit var lineAnnotationManager: PolylineAnnotationManager
+    private var pointAnnotationManager: PointAnnotationManager
+    private var lineAnnotationManager: PolylineAnnotationManager
 
     init {
         _mapView = mapView
@@ -48,6 +49,11 @@ class MapboxService(mapView: MapView) {
         val annotations = mapView.annotations
         pointAnnotationManager = annotations.createPointAnnotationManager()
         lineAnnotationManager = annotations.createPolylineAnnotationManager()
+
+        pointAnnotationManager.addClickListener {
+            onWaypointTap(it.point)
+            true
+        }
     }
 
     fun initialise() {

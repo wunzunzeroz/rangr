@@ -20,4 +20,7 @@ interface WaypointDao {
 
     @Delete()
     suspend fun delete(waypoint: Waypoint)
+
+    @Query("SELECT * FROM waypoint WHERE latitude = :lat AND longitude = :lng")
+    suspend fun getByLatLng(lat: Double, lng: Double): Waypoint?
 }

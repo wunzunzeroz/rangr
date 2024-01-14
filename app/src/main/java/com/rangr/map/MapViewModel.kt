@@ -12,6 +12,7 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.data.AppDatabase
 import com.rangr.map.models.*
 import com.rangr.map.repositories.WaypointsRepository
+import kotlinx.coroutines.launch
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val _db: AppDatabase = Room.databaseBuilder(application, AppDatabase::class.java, "rangr-database").build()
@@ -47,15 +48,33 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     val route = _route
     val routeProfile = ChartEntryModelProducer()
 
+    private var _selectedWaypoint = MutableLiveData<Waypoint?>(null)
+    val selectedWaypoint = _selectedWaypoint
 
     fun initialise(mapboxService: MapboxService) {
         _mapboxService = mapboxService
         _mapboxService.initialise()
 
+        _mapboxService.onWaypointTap = this::onWaypointTap
+
         waypoints.observeForever { waypointList ->
             waypointList.filterNotNull().forEach { waypoint ->
                 mapboxService.renderWaypoint(waypoint, _waypointIcon)
             }
+        }
+    }
+
+    private fun onWaypointTap(point: Point) {
+        println("POINT TAPPED - ${point.latitude()}, ${point.longitude()}")
+
+        viewModelScope.launch {
+            val waypoint = _waypointsRepository.getWaypointByLatLng(point.latitude(), point.longitude())
+
+            println("GOT WAYPOINT: ${waypoint?.name}")
+
+            _selectedWaypoint.value = waypoint
+            setBottomSheetType(SheetType.WaypointDetail)
+            setBottomSheetVisible(true)
         }
     }
 

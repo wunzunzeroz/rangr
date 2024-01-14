@@ -15,6 +15,11 @@ class WaypointsRepository(private val dao: WaypointDao) {
         return dao.getById(id)
     }
 
+    @WorkerThread
+    suspend fun getWaypointByLatLng(lat: Double, lng: Double): Waypoint? {
+        return dao.getByLatLng(lat, lng)
+    }
+
     val allWaypoints = dao.getAll()
 
     fun getWaypoints(): Flow<List<Waypoint?>> {
