@@ -33,14 +33,15 @@ class MapActivity : ComponentActivity() {
         val mapView = MapView(this)
         val mapController = MapboxService(mapView)
 
+        model.setTapIcon(blueMarker())
+        model.setRouteIcon(orangeMarker())
+        model.setWaypointIcon(greenMarker())
+
         val locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
         locationPermissionHelper.checkPermissions {
             model.initialise(mapController)
         }
 
-        model.setTapIcon(blueMarker())
-        model.setRouteIcon(orangeMarker())
-        model.setWaypointIcon(greenMarker())
 
         setContent { MainScreen(model) }
     }

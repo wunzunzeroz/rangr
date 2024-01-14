@@ -51,6 +51,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun initialise(mapboxService: MapboxService) {
         _mapboxService = mapboxService
         _mapboxService.initialise()
+
+        waypoints.observeForever { waypointList ->
+            waypointList.filterNotNull().forEach { waypoint ->
+                mapboxService.renderWaypoint(waypoint, _waypointIcon)
+            }
+        }
     }
 
     fun setTapIcon(icon: Bitmap) {
