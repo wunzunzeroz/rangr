@@ -112,6 +112,10 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
 
+    val proj4j_version = "1.3.0"
+    implementation("org.locationtech.proj4j:proj4j:$proj4j_version")
+    implementation("org.locationtech.proj4j:proj4j-epsg:$proj4j_version")
+
     // To use Kotlin Symbol Processing (KSP)
     ksp("androidx.room:room-compiler:$room_version")
 
