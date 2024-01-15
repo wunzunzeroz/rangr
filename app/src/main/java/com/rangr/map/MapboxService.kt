@@ -294,6 +294,10 @@ class MapboxService(mapView: MapView) {
         return pointAnnotationManager.create(pointAnnotationOptions)
     }
 
+    fun deleteAllWaypoints() {
+        pointAnnotationManager.deleteAll()
+    }
+
     companion object {
         private const val SOURCE = "TERRAIN_SOURCE"
         private const val SKY_LAYER = "sky"

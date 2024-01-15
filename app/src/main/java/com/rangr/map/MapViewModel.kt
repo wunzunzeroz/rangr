@@ -58,6 +58,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _mapboxService.onWaypointTap = this::onWaypointTap
 
         waypoints.observeForever { waypointList ->
+            mapboxService.deleteAllWaypoints()
+
             waypointList.filterNotNull().forEach { waypoint ->
                 mapboxService.renderWaypoint(waypoint, _waypointIcon)
             }
@@ -183,6 +185,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun onBottomSheetDismissed() {
         setBottomSheetVisible(false)
         deleteTapPoint()
+    }
+
+    fun deleteWaypoint(wpt: Waypoint) {
+        viewModelScope.launch {
+            _waypointsRepository.deleteWaypoint(wpt)
+        }
     }
 
 }
