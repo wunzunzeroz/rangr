@@ -1,24 +1,31 @@
 package com.rangr.map
 
+import android.app.Application
 import android.graphics.Bitmap
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import androidx.room.Room
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
-import com.rangr.map.models.MapState
-import com.rangr.map.models.MapType
-import com.rangr.map.models.Route
-import com.rangr.map.models.SheetType
+import com.rangr.data.AppDatabase
+import com.rangr.map.models.*
+import com.rangr.map.repositories.WaypointsRepository
+import kotlinx.coroutines.launch
 
-class MapViewModel : ViewModel() {
+class MapViewModel(application: Application) : AndroidViewModel(application) {
+    private val _db: AppDatabase = Room.databaseBuilder(application, AppDatabase::class.java, "rangr-database").build()
+
+    private val _waypointsRepository = WaypointsRepository(_db.waypointDao())
+    val waypoints: LiveData<List<Waypoint?>> = _waypointsRepository.getWaypoints().asLiveData()
+
     private val _routeRepository = RouteRepository()
     private lateinit var _mapboxService: MapboxService
 
     private lateinit var _tapIcon: Bitmap
     private lateinit var _routeIcon: Bitmap
+    private lateinit var _waypointIcon: Bitmap
 
     private var _mapState = MutableLiveData(MapState.Viewing)
     val mapState = _mapState
@@ -41,10 +48,36 @@ class MapViewModel : ViewModel() {
     val route = _route
     val routeProfile = ChartEntryModelProducer()
 
+    private var _selectedWaypoint = MutableLiveData<Waypoint?>(null)
+    val selectedWaypoint = _selectedWaypoint
 
     fun initialise(mapboxService: MapboxService) {
         _mapboxService = mapboxService
         _mapboxService.initialise()
+
+        _mapboxService.onWaypointTap = this::onWaypointTap
+
+        waypoints.observeForever { waypointList ->
+            mapboxService.deleteAllWaypoints()
+
+            waypointList.filterNotNull().forEach { waypoint ->
+                mapboxService.renderWaypoint(waypoint, _waypointIcon)
+            }
+        }
+    }
+
+    private fun onWaypointTap(point: Point) {
+        println("POINT TAPPED - ${point.latitude()}, ${point.longitude()}")
+
+        viewModelScope.launch {
+            val waypoint = _waypointsRepository.getWaypointByLatLng(point.latitude(), point.longitude())
+
+            println("GOT WAYPOINT: ${waypoint?.name}")
+
+            _selectedWaypoint.value = waypoint
+            setBottomSheetType(SheetType.WaypointDetail)
+            setBottomSheetVisible(true)
+        }
     }
 
     fun setTapIcon(icon: Bitmap) {
@@ -53,6 +86,10 @@ class MapViewModel : ViewModel() {
 
     fun setRouteIcon(icon: Bitmap) {
         _routeIcon = icon
+    }
+
+    fun setWaypointIcon(icon: Bitmap) {
+        _waypointIcon = icon
     }
 
     fun setBottomSheetVisible(visible: Boolean) {
@@ -130,16 +167,30 @@ class MapViewModel : ViewModel() {
         _mapboxService.deletePoint(_tapPointRef!!)
     }
 
-    fun createWaypoint(tappedPoint: Point) {
+    suspend fun createWaypoint(lat: Double, lng: Double, name: String, desc: String) {
+        val wpt = Waypoint(name = name, latitude = lat, longitude = lng, description = desc)
+
+        _waypointsRepository.saveWaypoint(wpt)
+        _mapboxService.renderWaypoint(wpt, _waypointIcon)
     }
 
     fun setMapType(type: MapType) {
         _mapboxService.setMapType(type)
     }
 
+    fun setMapState(state: MapState) {
+        _mapState.value = state
+    }
+
     fun onBottomSheetDismissed() {
         setBottomSheetVisible(false)
         deleteTapPoint()
+    }
+
+    fun deleteWaypoint(wpt: Waypoint) {
+        viewModelScope.launch {
+            _waypointsRepository.deleteWaypoint(wpt)
+        }
     }
 
 }
