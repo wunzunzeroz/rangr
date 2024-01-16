@@ -9,54 +9,55 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
+import com.rangr.map.models.GeoPosition
 import com.rangr.map.models.SheetType
-import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Composable
 fun LocationDetailBottomSheet(mapViewModel: MapViewModel) {
     val tappedPoint = mapViewModel.tappedPoint.observeAsState(null)
-    val tp = tappedPoint.value
+
+    val tp = tappedPoint.value ?: return Text("Tapped point is null")
+
+    val gp = GeoPosition(tp.latitude(), tp.longitude())
 
     var buttonClicked by remember { mutableStateOf(false) }
 
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .height(150.dp)
             .fillMaxWidth()
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("POINT", fontSize = 4.em)
+        Text("TAPPED POINT", fontSize = 5.em)
         Spacer(modifier = Modifier.height(20.dp))
-        tp.let {
-            if (tp != null) {
-                val lat = BigDecimal(tp.latitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
-                val lng = BigDecimal(tp.longitude()).setScale(6, RoundingMode.HALF_EVEN).toDouble()
 
-                Text("LATITUDE: $lat")
-                Text("LONGITUDE: $lng")
+        Text("GRID REFERENCE", fontSize = 3.em)
+        Text("E ${gp.gridReference.eastings}")
+        Text("N ${gp.gridReference.northings}")
+        Spacer(modifier = Modifier.height(20.dp))
 
-                Spacer(modifier = Modifier.height(10.dp))
+        Text("LAT / LNG (DECIMAL)", fontSize = 3.em)
+        Text("LAT: ${gp.latLngDecimal.latitude}")
+        Text("LNG: ${gp.latLngDecimal.longitude}")
+        Spacer(modifier = Modifier.height(20.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    TextButton(text = "CREATE WAYPOINT", onClick = {
-                        mapViewModel.setBottomSheetType(SheetType.WaypointCreation)
-                    })
-                    TextButton(text = "ADD TO ROUTE", onClick = { buttonClicked = true })
-                }
-            }
-        }
+        Text("LAT / LNG (MINUTES)", fontSize = 3.em)
+        Text("LAT: ${gp.latLngDegreesMinutes.latitude}")
+        Text("LNG: ${gp.latLngDegreesMinutes.longitude}")
+        Spacer(modifier = Modifier.height(20.dp))
+
+        TextButton(text = "CREATE WAYPOINT", onClick = {
+            mapViewModel.setBottomSheetType(SheetType.WaypointCreation)
+        }, modifier = Modifier.fillMaxWidth())
+        TextButton(text = "ADD TO ROUTE", onClick = { buttonClicked = true }, modifier = Modifier.fillMaxWidth())
     }
 
     if (buttonClicked) {
         LaunchedEffect(Unit) {
-            if (tp != null) {
-                println("TAPPED ADD TO ROUTE")
-                mapViewModel.addToRoute(tp)
-                buttonClicked = false
-            }
+            println("TAPPED ADD TO ROUTE")
+            mapViewModel.addToRoute(tp)
+            buttonClicked = false
         }
     }
 }
