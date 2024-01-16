@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.CoordinateConversion
 import com.rangr.map.MapViewModel
+import com.rangr.map.models.GeoPosition
 import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
 
@@ -26,10 +27,9 @@ fun WaypointDetailBottomSheet(model: MapViewModel) {
         return Text("Waypoint is null")
     }
 
-    var showDialog by remember { mutableStateOf(false) }
+    val gp = GeoPosition(wpt.latitude, wpt.longitude)
 
-    val gr = CoordinateConversion.LatLngToGridRef(wpt.latitude, wpt.longitude)
-    val degreesMinutes = CoordinateConversion.LatLngDecimalToMinutes(wpt.latitude, wpt.longitude)
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
@@ -40,18 +40,18 @@ fun WaypointDetailBottomSheet(model: MapViewModel) {
         Spacer(modifier = Modifier.height(20.dp))
 
         Text("GRID REFERENCE", fontSize = 3.em)
-        Text("E ${gr?.eastings}")
-        Text("N ${gr?.northings}")
+        Text("E ${gp.gridReference.eastings}")
+        Text("N ${gp.gridReference.northings}")
         Spacer(modifier = Modifier.height(20.dp))
 
         Text("LAT / LNG (DECIMAL)", fontSize = 3.em)
-        Text("LAT: ${wpt.latitude}")
-        Text("LNG: ${wpt.longitude}")
+        Text("LAT: ${gp.latLngDecimal.latitude}")
+        Text("LNG: ${gp.latLngDecimal.longitude}")
         Spacer(modifier = Modifier.height(20.dp))
 
         Text("LAT / LNG (MINUTES)", fontSize = 3.em)
-        Text("LAT: ${degreesMinutes.x}")
-        Text("LNG: ${degreesMinutes.y}")
+        Text("LAT: ${gp.latLngDegreesMinutes.latitude}")
+        Text("LNG: ${gp.latLngDegreesMinutes.longitude}")
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
