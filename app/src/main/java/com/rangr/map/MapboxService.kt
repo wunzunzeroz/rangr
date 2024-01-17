@@ -107,7 +107,10 @@ class MapboxService(mapView: MapView) {
         userLocation?.let {
             _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
         }
+    }
 
+    fun scrollToLocation(point: Point) {
+        _mapView.mapboxMap.setCamera(CameraOptions.Builder().center(point).build())
     }
 
     fun getMapView(): MapView {

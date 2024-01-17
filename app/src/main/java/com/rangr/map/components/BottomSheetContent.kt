@@ -14,6 +14,7 @@ fun BottomSheetContent(model: MapViewModel) {
         SheetType.LocationDetail -> LocationDetailBottomSheet(model)
         SheetType.WaypointCreation -> WaypointCreationBottomSheet(model)
         SheetType.WaypointDetail -> WaypointDetailBottomSheet(model)
+        SheetType.GoToLocation -> GoToLocationBottomSheet(model)
     }
 }
 
