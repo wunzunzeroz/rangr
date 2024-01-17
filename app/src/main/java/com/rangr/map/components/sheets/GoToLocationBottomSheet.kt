@@ -41,7 +41,7 @@ fun GoToLocationBottomSheet(model: MapViewModel) {
 
         when (selectedTab) {
             0 -> GridReferenceInput(onCoordinateChange = { gp -> position = gp })
-            1 -> DecimalInput(onCoordinateChange = { lat, lon -> position = GeoPosition(lat, lon) })
+            1 -> DecimalInput(onCoordinateChange = { gp -> position = gp })
             2 -> DMSInput(onCoordinateChange = { lat, lon -> position = GeoPosition(lat, lon) })
         }
 
@@ -139,9 +139,72 @@ fun GridReferenceInput(onCoordinateChange: (GeoPosition) -> Unit) {
 }
 
 @Composable
-fun DecimalInput(onCoordinateChange: (Double, Double) -> Unit) {
-    // Implement decimal lat/lon input
-    // Call onCoordinateChange with the lat, lon
+fun DecimalInput(onCoordinateChange: (GeoPosition) -> Unit) {
+    var lat by remember { mutableStateOf("") }
+    var lng by remember { mutableStateOf("") }
+
+    Column {
+        Spacer(Modifier.height(10.dp))
+        OutlinedTextField(
+            value = lat,
+            onValueChange = { value ->
+                lat = value
+                if (lat.length > 3 && lng.length > 3) {
+
+                    val position = GeoPosition(lat.toDouble(), lng.toDouble())
+                    println("DBG: LAT: $lat, LNG: $lng")
+                    println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                    onCoordinateChange(position)
+                }
+            },
+            label = { Text("LATITUDE") },
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = RangrOrange, // Text color
+                cursorColor = RangrOrange, // Cursor color
+                focusedIndicatorColor = RangrOrange, // Underline color when focused
+                unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                focusedLabelColor = RangrOrange, // Label color when focused
+                unfocusedLabelColor = RangrOrange, // Label co
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
+            ),
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedTextField(
+            value = lng,
+            onValueChange = { value ->
+                lng = value
+                if (value.length > 3 && lat.length > 3) {
+
+                    val position = GeoPosition(lat.toDouble(), lng.toDouble())
+                    println("DBG: LAT: $lat, LNG: $lng")
+                    println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                    onCoordinateChange(position)
+                }
+            },
+            label = { Text("LONGITUDE") },
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = RangrOrange, // Text color
+                cursorColor = RangrOrange, // Cursor color
+                focusedIndicatorColor = RangrOrange, // Underline color when focused
+                unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                focusedLabelColor = RangrOrange, // Label color when focused
+                unfocusedLabelColor = RangrOrange, // Label co
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
+            ),
+        )
+        Spacer(Modifier.height(20.dp))
+
+        // You might want to convert eastings and northings to lat, lon and call onCoordinateChange here
+        // This depends on your specific conversion logic
+    }
 }
 
 @Composable
