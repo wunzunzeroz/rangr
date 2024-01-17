@@ -1,4 +1,4 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,7 +27,12 @@ fun GoToLocationBottomSheet(model: MapViewModel) {
     var position by remember { mutableStateOf(GeoPosition(0.0, 0.0)) }
 
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(5.dp))
         Text("GO TO LOCATION", fontSize = 5.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Divider()
+        Spacer(modifier = Modifier.height(20.dp))
+
         TabRow(selectedTabIndex = selectedTab, contentColor = RangrOrange, backgroundColor = RangrDark) {
             tabs.forEachIndexed { index, title ->
                 Tab(selected = index == selectedTab, onClick = { selectedTab = index }, text = { Text(title) })
@@ -40,7 +45,7 @@ fun GoToLocationBottomSheet(model: MapViewModel) {
             2 -> DMSInput(onCoordinateChange = { lat, lon -> position = GeoPosition(lat, lon) })
         }
 
-        TextButton(
+        com.rangr.map.components.TextButton(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
                 .fillMaxWidth(), onClick = {

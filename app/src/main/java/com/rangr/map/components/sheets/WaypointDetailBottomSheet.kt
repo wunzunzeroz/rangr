@@ -1,10 +1,7 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -30,13 +27,17 @@ fun WaypointDetailBottomSheet(model: MapViewModel) {
     val gp = GeoPosition(wpt.latitude, wpt.longitude)
 
     var showDialog by remember { mutableStateOf(false) }
+    val name = wpt.name.ifBlank { "WAYPOINT" }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text(wpt.name, fontSize = 5.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(name, fontSize = 5.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Divider()
         Spacer(modifier = Modifier.height(20.dp))
 
         Text("GRID REFERENCE", fontSize = 3.em)

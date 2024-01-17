@@ -1,4 +1,4 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState

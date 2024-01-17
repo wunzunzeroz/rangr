@@ -1,6 +1,7 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -9,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
+import com.rangr.map.components.TextButton
 import com.rangr.map.models.GeoPosition
 import com.rangr.map.models.SheetType
 
@@ -29,7 +31,10 @@ fun LocationDetailBottomSheet(mapViewModel: MapViewModel) {
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(5.dp))
         Text("TAPPED POINT", fontSize = 5.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Divider()
         Spacer(modifier = Modifier.height(20.dp))
 
         Text("GRID REFERENCE", fontSize = 3.em)
