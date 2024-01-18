@@ -3,16 +3,13 @@ package com.rangr.map.components
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddLocation
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.mapbox.maps.MapView
+import com.mapbox.geojson.Point
 import com.rangr.map.MapViewModel
 import com.rangr.map.models.MapState
 import com.rangr.map.models.SheetType
@@ -40,7 +37,16 @@ fun ViewingScreen(model: MapViewModel) {
             MapActionButton(
                 icon = Icons.Filled.AddLocation,
                 onClick = {
-                          model.setMapState(MapState.Test)
+                    model.setMapState(MapState.Test)
+                },
+                contentDescription = "Select map style",
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            MapActionButton(
+                icon = Icons.Filled.NearMe,
+                onClick = {
+                    model.setBottomSheetType(SheetType.GoToLocation)
+                    model.setBottomSheetVisible(true)
                 },
                 contentDescription = "Select map style",
             )

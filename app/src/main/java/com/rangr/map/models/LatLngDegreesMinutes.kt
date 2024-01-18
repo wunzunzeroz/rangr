@@ -9,5 +9,13 @@ data class DegreesMinutes(val degrees: Int, val minutes: Double, val cardinalDir
 }
 
 enum class CardinalDirection {
-    N, S, E, W
+    N, S, E, W;
+
+    companion object {
+        fun parse(str: String): CardinalDirection {
+            val result = entries.firstOrNull { it.name == str }
+
+            return result ?: throw IllegalStateException("Unable to parse string in CardinalDirection: $str")
+        }
+    }
 }

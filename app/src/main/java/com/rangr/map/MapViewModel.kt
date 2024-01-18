@@ -108,6 +108,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 //        TODO("Not yet implemented")
     }
 
+    fun scrollToLocation(point: Point) {
+        _mapboxService.scrollToLocation(point)
+    }
+
     suspend fun addToRoute(waypoint: Point) {
         println("ADD TO ROUTE")
         _mapState.value = MapState.Routing

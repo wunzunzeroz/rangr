@@ -1,4 +1,4 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -14,6 +14,7 @@ fun BottomSheetContent(model: MapViewModel) {
         SheetType.LocationDetail -> LocationDetailBottomSheet(model)
         SheetType.WaypointCreation -> WaypointCreationBottomSheet(model)
         SheetType.WaypointDetail -> WaypointDetailBottomSheet(model)
+        SheetType.GoToLocation -> GoToLocationBottomSheet(model)
     }
 }
 

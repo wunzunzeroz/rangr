@@ -4,5 +4,6 @@ enum class SheetType {
     MapTypeSelection,
     LocationDetail,
     WaypointCreation,
-    WaypointDetail
+    WaypointDetail,
+    GoToLocation
 }

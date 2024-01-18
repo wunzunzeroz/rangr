@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -16,9 +17,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.unit.dp
 import com.mapbox.maps.MapView
 import com.rangr.R
 import com.rangr.map.components.*
+import com.rangr.map.components.sheets.BottomSheetContent
 import com.rangr.map.models.MapState
 import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
@@ -76,6 +79,7 @@ class MapActivity : ComponentActivity() {
 
         ModalBottomSheetLayout(
             sheetState = sheetState,
+            sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             sheetContent = { BottomSheetContent(model) },
             sheetBackgroundColor = RangrDark,
             sheetContentColor = RangrOrange,

@@ -1,12 +1,11 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -25,7 +24,11 @@ fun MapTypeBottomSheet(model: MapViewModel) {
     val mapStyles = listOf("OUTDOORS", "SATELLITE", "MARINE", "TOPOGRAPHIC")
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)) {
-        Text("MAP TYPE")
+        Spacer(modifier = Modifier.height(5.dp))
+        Text("MAP TYPE", fontSize = 5.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Divider()
+        Spacer(modifier = Modifier.height(20.dp))
         LazyColumn {
             items(mapStyles) { style ->
                 ListItem(style, model)

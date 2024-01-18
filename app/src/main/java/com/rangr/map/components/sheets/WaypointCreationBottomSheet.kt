@@ -1,8 +1,9 @@
-package com.rangr.map.components
+package com.rangr.map.components.sheets
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
+import com.rangr.map.components.TextButton
 import com.rangr.ui.theme.RangrOrange
 import com.rangr.util.Utils
 
@@ -43,7 +45,10 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text("CREATE WAYPOINT", fontSize = 4.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Text("CREATE WAYPOINT", fontSize = 5.em)
+        Spacer(modifier = Modifier.height(5.dp))
+        Divider()
         Spacer(modifier = Modifier.height(20.dp))
 
         TextField(
