@@ -32,6 +32,24 @@ class GeoPosition(latitude: Double, longitude: Double) {
             return GeoPosition(latLng.latitude, latLng.longitude)
         }
 
+        fun fromDegreesMinutes(latDeg: Int, latMin: Double, latDir: CardinalDirection,  lngDeg: Int, lngMin: Double, lngDir: CardinalDirection): GeoPosition {
+            val latitude = convertToDecimal(latDeg, latMin, latDir)
+            val longitude = convertToDecimal(lngDeg, lngMin, lngDir)
+
+            return GeoPosition(latitude, longitude)
+        }
+
+        fun convertToDecimal(degrees: Int, minutes: Double, cardinalDirection: CardinalDirection): Double {
+            val result = degrees + (minutes / 60.0)
+
+            return if (cardinalDirection == CardinalDirection.S || cardinalDirection == CardinalDirection.W) {
+                result * -1
+            } else {
+                result
+            }
+        }
+
+
         fun latLngDecimalToMinutes(input: LatLngDecimal): LatLngDegreesMinutes {
             val latitude = convertToDegreesMinutes(input.latitude, true)
             val longitude = convertToDegreesMinutes(input.longitude, false)

@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
+import com.rangr.map.models.CardinalDirection
 import com.rangr.map.models.GeoPosition
 import com.rangr.map.models.GridRef
 import com.rangr.map.models.SheetType
@@ -21,7 +22,7 @@ import com.rangr.ui.theme.RangrOrange
 fun GoToLocationBottomSheet(model: MapViewModel) {
 
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("GRID REF", "LAT/LNG DEC", "LAT/LNG DMS")
+    val tabs = listOf("GRID REF", "LAT/LNG DD", "LAT/LNG DDM")
 
     // Point state to remember the coordinates
     var position by remember { mutableStateOf(GeoPosition(0.0, 0.0)) }
@@ -42,7 +43,7 @@ fun GoToLocationBottomSheet(model: MapViewModel) {
         when (selectedTab) {
             0 -> GridReferenceInput(onCoordinateChange = { gp -> position = gp })
             1 -> DecimalInput(onCoordinateChange = { gp -> position = gp })
-            2 -> DMSInput(onCoordinateChange = { lat, lon -> position = GeoPosition(lat, lon) })
+            2 -> DMSInput(onCoordinateChange = { gp -> position = gp })
         }
 
         com.rangr.map.components.TextButton(
@@ -208,7 +209,233 @@ fun DecimalInput(onCoordinateChange: (GeoPosition) -> Unit) {
 }
 
 @Composable
-fun DMSInput(onCoordinateChange: (Double, Double) -> Unit) {
-    // Implement degrees/minutes/seconds input and conversion logic
-    // Call onCoordinateChange with the converted lat, lon
+fun DMSInput(onCoordinateChange: (GeoPosition) -> Unit) {
+    var latDeg by remember { mutableStateOf("") }
+    var latMin by remember { mutableStateOf("") }
+    var latDir by remember { mutableStateOf("S") }
+
+    var lngDeg by remember { mutableStateOf("") }
+    var lngMin by remember { mutableStateOf("") }
+    var lngDir by remember { mutableStateOf("E") }
+
+    Column {
+        Spacer(Modifier.height(10.dp))
+        Row() {
+            OutlinedTextField(
+                modifier = Modifier.weight(0.8f),
+                value = latDeg,
+                onValueChange = { value ->
+                    latDeg = value
+                    if (latDeg.length > 1 && lngDeg.length > 1 && latMin.length > 1 && lngMin.length > 1) {
+
+                        val position = GeoPosition.fromDegreesMinutes(
+                            latDeg.toInt(),
+                            latMin.toDouble(),
+                            CardinalDirection.parse(latDir.first().toString()),
+                            lngDeg.toInt(),
+                            lngMin.toDouble(),
+                            CardinalDirection.parse(lngDir.first().toString())
+                        )
+                        println("DBG: LAT: $latDeg, LNG: $lngDeg")
+                        println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                        onCoordinateChange(position)
+                    }
+                },
+                label = { Text("LAT DEGREES") },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = RangrOrange, // Text color
+                    cursorColor = RangrOrange, // Cursor color
+                    focusedIndicatorColor = RangrOrange, // Underline color when focused
+                    unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                    focusedLabelColor = RangrOrange, // Label color when focused
+                    unfocusedLabelColor = RangrOrange, // Label co
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
+                ),
+            )
+            Spacer(Modifier.width(10.dp))
+            OutlinedTextField(
+                value = latMin,
+                modifier = Modifier.weight(1f),
+                onValueChange = { value ->
+                    latMin = value
+                    if (latDeg.length > 1 && lngDeg.length > 1 && latMin.length > 1 && lngMin.length > 1) {
+
+
+                        val position = GeoPosition.fromDegreesMinutes(
+                            latDeg.toInt(),
+                            latMin.toDouble(),
+                            CardinalDirection.parse(latDir.first().toString()),
+                            lngDeg.toInt(),
+                            lngMin.toDouble(),
+                            CardinalDirection.parse(lngDir.first().toString())
+                        )
+                        println("DBG: LAT: $latDeg, LNG: $lngDeg")
+                        println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                        onCoordinateChange(position)
+                    }
+                },
+                label = { Text("LAT MINUTES") },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = RangrOrange, // Text color
+                    cursorColor = RangrOrange, // Cursor color
+                    focusedIndicatorColor = RangrOrange, // Underline color when focused
+                    unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                    focusedLabelColor = RangrOrange, // Label color when focused
+                    unfocusedLabelColor = RangrOrange, // Label co
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
+                ),
+            )
+            Spacer(Modifier.width(10.dp))
+            OutlinedTextField(
+                value = latDir,
+                modifier = Modifier.weight(0.3f),
+                onValueChange = { value ->
+                    latDir = value.uppercase()
+                    if (latDeg.length > 1 && lngDeg.length > 1) {
+                        val position = GeoPosition.fromDegreesMinutes(
+                            latDeg.toInt(),
+                            latMin.toDouble(),
+                            CardinalDirection.parse(latDir.first().toString()),
+                            lngDeg.toInt(),
+                            lngMin.toDouble(),
+                            CardinalDirection.parse(lngDir.first().toString())
+                        )
+                        println("DBG: LAT: $latDeg, LNG: $lngDeg")
+                        println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                        onCoordinateChange(position)
+                    }
+                },
+                label = { Text("DIR") },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = RangrOrange, // Text color
+                    cursorColor = RangrOrange, // Cursor color
+                    focusedIndicatorColor = RangrOrange, // Underline color when focused
+                    unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                    focusedLabelColor = RangrOrange, // Label color when focused
+                    unfocusedLabelColor = RangrOrange, // Label co
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Next
+                ),
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row() {
+            OutlinedTextField(
+                modifier = Modifier.weight(0.8f),
+                value = lngDeg,
+                onValueChange = { value ->
+                    lngDeg = value
+                    if (latDeg.length > 1 && lngDeg.length > 1 && latMin.length > 1 && lngMin.length > 1) {
+
+                        val position = GeoPosition.fromDegreesMinutes(
+                            latDeg.toInt(),
+                            latMin.toDouble(),
+                            CardinalDirection.parse(latDir.first().toString()),
+                            lngDeg.toInt(),
+                            lngMin.toDouble(),
+                            CardinalDirection.parse(lngDir.first().toString())
+                        )
+                        println("DBG: LAT: $latDeg, LNG: $lngDeg")
+                        println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                        onCoordinateChange(position)
+                    }
+                },
+                label = { Text("LNG DEGREES") },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = RangrOrange, // Text color
+                    cursorColor = RangrOrange, // Cursor color
+                    focusedIndicatorColor = RangrOrange, // Underline color when focused
+                    unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                    focusedLabelColor = RangrOrange, // Label color when focused
+                    unfocusedLabelColor = RangrOrange, // Label co
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
+                ),
+            )
+            Spacer(Modifier.width(10.dp))
+            OutlinedTextField(
+                value = lngMin,
+                modifier = Modifier.weight(1f),
+                onValueChange = { value ->
+                    lngMin = value
+                    if (latDeg.length > 1 && lngDeg.length > 1 && latMin.length > 1 && lngMin.length > 1) {
+
+                        val position = GeoPosition.fromDegreesMinutes(
+                            latDeg.toInt(),
+                            latMin.toDouble(),
+                            CardinalDirection.parse(latDir.first().toString()),
+                            lngDeg.toInt(),
+                            lngMin.toDouble(),
+                            CardinalDirection.parse(lngDir.first().toString())
+                        )
+                        println("DBG: LAT: $latDeg, LNG: $lngDeg")
+                        println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                        onCoordinateChange(position)
+                    }
+                },
+                label = { Text("LNG MINUTES") },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = RangrOrange, // Text color
+                    cursorColor = RangrOrange, // Cursor color
+                    focusedIndicatorColor = RangrOrange, // Underline color when focused
+                    unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                    focusedLabelColor = RangrOrange, // Label color when focused
+                    unfocusedLabelColor = RangrOrange, // Label co
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
+                ),
+            )
+            Spacer(Modifier.width(10.dp))
+            OutlinedTextField(
+                value = lngDir,
+                modifier = Modifier.weight(0.3f),
+                onValueChange = { value ->
+                    lngDir = value.uppercase()
+                    if (latDeg.length > 1 && lngDeg.length > 1) {
+                        val position = GeoPosition.fromDegreesMinutes(
+                            latDeg.toInt(),
+                            latMin.toDouble(),
+                            CardinalDirection.parse(latDir.first().toString()),
+                            lngDeg.toInt(),
+                            lngMin.toDouble(),
+                            CardinalDirection.parse(lngDir.first().toString())
+                        )
+                        println("DBG: LAT: $latDeg, LNG: $lngDeg")
+                        println("CREATE POINT: ${position.latLngDegreesMinutes}")
+
+                        onCoordinateChange(position)
+                    }
+                },
+                label = { Text("DIR") },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = RangrOrange, // Text color
+                    cursorColor = RangrOrange, // Cursor color
+                    focusedIndicatorColor = RangrOrange, // Underline color when focused
+                    unfocusedIndicatorColor = RangrOrange, // Underline color when unfocused
+                    focusedLabelColor = RangrOrange, // Label color when focused
+                    unfocusedLabelColor = RangrOrange, // Label co
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Next
+                ),
+            )
+        }
+        Spacer(Modifier.height(20.dp))
+
+        // You might want to convert eastings and northings to lat, lon and call onCoordinateChange here
+        // This depends on your specific conversion logic
+    }
 }
