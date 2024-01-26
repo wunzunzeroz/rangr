@@ -24,6 +24,26 @@ class GeoPosition(latitude: Double, longitude: Double) {
         return Point.fromLngLat(latLngDecimal.longitude, latLngDecimal.latitude)
     }
 
+    fun toShareableString(): String {
+        return """
+        LOCATION:
+        
+        Grid reference:
+        E${gridReference.eastings}
+        N${gridReference.northings}
+        
+        LAT/LNG DD:
+        ${latLngDecimal.latitude}, ${latLngDecimal.longitude}
+        
+        LAT/LNG DDM:
+        ${latLngDegreesMinutes.latitude}
+        ${latLngDegreesMinutes.longitude}
+        
+        GOOGLE MAPS LINK:
+        https://google.com/maps?q=${latLngDecimal.latitude},${latLngDecimal.longitude}
+    """.trimIndent()
+    }
+
     companion object {
         fun fromGridRef(input: GridRef): GeoPosition {
             val latLng = gridRefToLatLng(input)
