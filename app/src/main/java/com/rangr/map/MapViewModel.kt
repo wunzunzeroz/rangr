@@ -70,7 +70,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         println("POINT TAPPED - ${point.latitude()}, ${point.longitude()}")
 
         viewModelScope.launch {
-            val waypoint = _waypointsRepository.getWaypointByLatLng(point.latitude(), point.longitude())
+            val pos = GeoPosition(point.latitude(), point.longitude())
+            val waypoint = _waypointsRepository.getWaypointByPosition(pos)
 
             println("GOT WAYPOINT: ${waypoint?.name}")
 
@@ -172,7 +173,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun createWaypoint(lat: Double, lng: Double, name: String, desc: String) {
-        val wpt = Waypoint(name = name, latitude = lat, longitude = lng, description = desc)
+        val pos = GeoPosition(lat, lng)
+        val iconType = WaypointIconType.Flag // TODO
+        val wpt = Waypoint(name = name, position = pos, iconType = iconType, description = desc)
 
         _waypointsRepository.saveWaypoint(wpt)
         _mapboxService.renderWaypoint(wpt, _waypointIcon)

@@ -27,7 +27,7 @@ fun WaypointDetailBottomSheet(model: MapViewModel) {
         return Text("Waypoint is null")
     }
 
-    val gp = GeoPosition(wpt.latitude, wpt.longitude)
+    val gp = wpt.position
 
     var showDialog by remember { mutableStateOf(false) }
     val name = wpt.name.ifBlank { "WAYPOINT" }

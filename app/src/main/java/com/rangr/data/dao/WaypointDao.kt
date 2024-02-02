@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import com.rangr.map.models.GeoPosition
 import com.rangr.map.models.Waypoint
 import kotlinx.coroutines.flow.Flow
 
@@ -21,6 +22,6 @@ interface WaypointDao {
     @Delete()
     suspend fun delete(waypoint: Waypoint)
 
-    @Query("SELECT * FROM waypoint WHERE latitude = :lat AND longitude = :lng")
-    suspend fun getByLatLng(lat: Double, lng: Double): Waypoint?
+    @Query("SELECT * FROM waypoint WHERE position = :pos")
+    suspend fun getByPosition(pos: GeoPosition): Waypoint?
 }

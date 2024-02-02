@@ -290,7 +290,7 @@ class MapboxService(mapView: MapView) {
     }
 
     fun renderWaypoint(wpt: Waypoint, icon: Bitmap): PointAnnotation {
-        val point = Point.fromLngLat(wpt.longitude, wpt.latitude)
+        val point = wpt.position.toPoint()
         val pointAnnotationOptions: PointAnnotationOptions =
             PointAnnotationOptions().withPoint(point).withIconImage(icon)
 
