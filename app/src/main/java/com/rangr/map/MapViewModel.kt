@@ -172,10 +172,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _mapboxService.deletePoint(_tapPointRef!!)
     }
 
-    suspend fun createWaypoint(lat: Double, lng: Double, name: String, desc: String) {
+    suspend fun createWaypoint(lat: Double, lng: Double, name: String, markerType: WaypointIconType, desc: String) {
         val pos = GeoPosition(lat, lng)
-        val iconType = WaypointIconType.Flag // TODO
-        val wpt = Waypoint(name = name, position = pos, iconType = iconType, description = desc)
+        val wpt = Waypoint(name = name, position = pos, markerType = markerType, description = desc)
 
         _waypointsRepository.saveWaypoint(wpt)
         _mapboxService.renderWaypoint(wpt, _waypointIcon)

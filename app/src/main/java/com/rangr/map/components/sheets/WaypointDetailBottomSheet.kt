@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
-import com.rangr.map.models.GeoPosition
 import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
 import com.rangr.util.ClipboardUtils
@@ -43,6 +42,9 @@ fun WaypointDetailBottomSheet(model: MapViewModel) {
         Divider()
         Spacer(modifier = Modifier.height(20.dp))
 
+        Text("MARKER TYPE: ${wpt.markerType.name}", fontSize = 3.em)
+        Spacer(modifier = Modifier.height(20.dp))
+
         Text("GRID REFERENCE", fontSize = 3.em)
         Text("E ${gp.gridReference.eastings}")
         Text("N ${gp.gridReference.northings}")
@@ -63,7 +65,7 @@ fun WaypointDetailBottomSheet(model: MapViewModel) {
             onClick = {
                 ClipboardUtils.copyToClipboard(ctx, "Location Data", gp.toShareableString())
                 Toast.makeText(ctx, "Copied location to clipboard", Toast.LENGTH_SHORT).show()
-                      },
+            },
             colors = ButtonDefaults.buttonColors(
                 contentColor = RangrDark, backgroundColor = Color.Gray
             ),

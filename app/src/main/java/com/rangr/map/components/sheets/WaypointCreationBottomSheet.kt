@@ -3,10 +3,7 @@ package com.rangr.map.components.sheets
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -18,6 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
 import com.rangr.map.components.TextButton
+import com.rangr.map.models.WaypointIconType
+import com.rangr.ui.theme.RangrBlue
+import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
 import com.rangr.util.Utils
 
@@ -37,6 +37,8 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
 
     var latitude by remember { mutableDoubleStateOf(lat) }
     var longitude by remember { mutableDoubleStateOf(lon) }
+
+    var markerType by remember { mutableStateOf(WaypointIconType.Flag) }
 
     var buttonClicked by remember { mutableStateOf(false) }
 
@@ -101,6 +103,7 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
             )
         )
 
+
         // Description TextField
         TextField(
             value = description,
@@ -117,20 +120,60 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
             )
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        WaypointIconDropdown(onValueChange = { markerType = it })
 
-        TextButton(text = "CREATE WAYPOINT", onClick = {
-            buttonClicked = true
-        })
+        Spacer(modifier = Modifier.height(25.dp))
+
+        TextButton(
+            text = "CREATE WAYPOINT", onClick = {
+                buttonClicked = true
+            },
+            modifier = Modifier.fillMaxWidth(),
+            bgColor = RangrBlue
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
     }
 
     if (buttonClicked) {
         LaunchedEffect(Unit) {
-            model.createWaypoint(latitude, longitude, name, description)
+            model.createWaypoint(latitude, longitude, name, markerType, description)
             model.setBottomSheetVisible(false)
             Toast.makeText(ctx, "Created waypoint successfully", Toast.LENGTH_SHORT).show()
 
             buttonClicked = false
+        }
+    }
+}
+
+@Composable
+fun WaypointIconDropdown(onValueChange: (WaypointIconType) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedType by remember { mutableStateOf(WaypointIconType.Flag) }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = { expanded = true },
+            colors = ButtonDefaults.buttonColors(
+                contentColor = RangrDark, backgroundColor = RangrOrange
+            ),
+        ) {
+            Text("MARKER TYPE: ${selectedType.name}")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.width(200.dp)
+        ) {
+            WaypointIconType.values().forEach { type ->
+                DropdownMenuItem(onClick = {
+                    onValueChange(type)
+                    selectedType = type
+                    expanded = false
+                }) {
+                    Text(text = type.name)
+                }
+            }
         }
     }
 }

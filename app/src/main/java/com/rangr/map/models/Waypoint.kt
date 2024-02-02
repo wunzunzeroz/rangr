@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class Waypoint(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val iconType: WaypointIconType,
+    val markerType: WaypointIconType,
     val position: GeoPosition,
     val description: String
 )
