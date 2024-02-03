@@ -26,7 +26,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var _tapIcon: Bitmap
     private lateinit var _routeIcon: Bitmap
     private lateinit var _waypointIcon: Bitmap
-    private lateinit var _waypointMarkerFactory: WaypointMarkerFactory
+    lateinit var markerFactory: WaypointMarkerFactory
 
     private var _mapState = MutableLiveData(MapState.Viewing)
     val mapState = _mapState
@@ -62,7 +62,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             mapboxService.deleteAllWaypoints()
 
             waypointList.filterNotNull().forEach { waypoint ->
-                mapboxService.renderWaypoint(waypoint, _waypointMarkerFactory.getMarkerForType(waypoint.markerType))
+                mapboxService.renderWaypoint(waypoint, markerFactory.getMarkerForType(waypoint.markerType))
             }
         }
     }
@@ -94,8 +94,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _waypointIcon = icon
     }
 
-    fun setMarkerFactory(waypointMarkerFactory: WaypointMarkerFactory) {
-        _waypointMarkerFactory = waypointMarkerFactory
+    fun addMarkerFactory(waypointMarkerFactory: WaypointMarkerFactory) {
+        markerFactory = waypointMarkerFactory
     }
 
     fun setBottomSheetVisible(visible: Boolean) {
@@ -181,7 +181,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         val pos = GeoPosition(lat, lng)
         val wpt = Waypoint(name = name, position = pos, markerType = markerType, description = desc)
 
-        val marker = _waypointMarkerFactory.getMarkerForType(markerType)
+        val marker = markerFactory.getMarkerForType(markerType)
 
         println("MARKER = ${markerType.name}")
 

@@ -42,7 +42,7 @@ class MapActivity : ComponentActivity() {
         val mapController = MapboxService(mapView)
 
         val waypointMarkerFactory = WaypointMarkerFactory(getMarkerMap())
-        model.setMarkerFactory(waypointMarkerFactory)
+        model.addMarkerFactory(waypointMarkerFactory)
         model.setTapIcon(blueMarker())
         model.setRouteIcon(orangeMarker())
         model.setWaypointIcon(greenMarker())
@@ -92,6 +92,16 @@ class MapActivity : ComponentActivity() {
             WaypointIconType.House to getBitmap(drawable.house),
             WaypointIconType.Building to getBitmap(drawable.building),
             WaypointIconType.Castle to getBitmap(drawable.castle),
+
+            WaypointIconType.Footprints to getBitmap(drawable.footsteps),
+            WaypointIconType.Person to getBitmap(drawable.person),
+            WaypointIconType.People to getBitmap(drawable.people),
+            WaypointIconType.Skull to getBitmap(drawable.skull),
+
+            WaypointIconType.Food to getBitmap(drawable.food),
+            WaypointIconType.Drinks to getBitmap(drawable.drinks),
+            WaypointIconType.Fuel to getBitmap(drawable.fuel),
+            WaypointIconType.WaterSource to getBitmap(drawable.water_source),
         )
     }
 

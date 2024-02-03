@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.em
 import com.rangr.map.MapViewModel
 import com.rangr.map.components.TextButton
 import com.rangr.map.models.WaypointIconType
+import com.rangr.map.models.WaypointMarkerFactory
 import com.rangr.ui.theme.RangrBlue
 import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
@@ -120,7 +122,7 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
             )
         )
 
-        WaypointIconDropdown(onValueChange = { markerType = it })
+        WaypointIconDropdown(model.markerFactory, onValueChange = { markerType = it })
 
         Spacer(modifier = Modifier.height(25.dp))
 
@@ -147,7 +149,7 @@ fun WaypointCreationBottomSheet(model: MapViewModel) {
 }
 
 @Composable
-fun WaypointIconDropdown(onValueChange: (WaypointIconType) -> Unit) {
+fun WaypointIconDropdown(iconFactory: WaypointMarkerFactory, onValueChange: (WaypointIconType) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf(WaypointIconType.Flag) }
 
@@ -163,15 +165,19 @@ fun WaypointIconDropdown(onValueChange: (WaypointIconType) -> Unit) {
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.width(200.dp)
+            modifier = Modifier.width(300.dp)
         ) {
-            WaypointIconType.values().forEach { type ->
+            WaypointIconType.entries.forEach { type ->
                 DropdownMenuItem(onClick = {
                     onValueChange(type)
                     selectedType = type
                     expanded = false
                 }) {
-                    Text(text = type.name)
+                    Row {
+                        Icon(bitmap = iconFactory.getMarkerForType(type).asImageBitmap(), contentDescription = "")
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Text(text = type.name)
+                    }
                 }
             }
         }
