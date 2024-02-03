@@ -19,10 +19,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.dp
 import com.mapbox.maps.MapView
-import com.rangr.R
-import com.rangr.map.components.*
+import com.rangr.R.drawable
+import com.rangr.map.components.LocationPermissionHelper
+import com.rangr.map.components.RoutingScreen
+import com.rangr.map.components.TestScreen
+import com.rangr.map.components.ViewingScreen
 import com.rangr.map.components.sheets.BottomSheetContent
 import com.rangr.map.models.MapState
+import com.rangr.map.models.WaypointIconType
+import com.rangr.map.models.WaypointMarkerFactory
 import com.rangr.ui.theme.RangrDark
 import com.rangr.ui.theme.RangrOrange
 import java.lang.ref.WeakReference
@@ -36,6 +41,8 @@ class MapActivity : ComponentActivity() {
         val mapView = MapView(this)
         val mapController = MapboxService(mapView)
 
+        val waypointMarkerFactory = WaypointMarkerFactory(getMarkerMap())
+        model.setMarkerFactory(waypointMarkerFactory)
         model.setTapIcon(blueMarker())
         model.setRouteIcon(orangeMarker())
         model.setWaypointIcon(greenMarker())
@@ -47,6 +54,49 @@ class MapActivity : ComponentActivity() {
 
 
         setContent { MainScreen(model) }
+    }
+
+    private fun getMarkerMap(): Map<WaypointIconType, Bitmap> {
+        return mapOf(
+            WaypointIconType.Flag to getBitmap(drawable.flag),
+            WaypointIconType.Marker to getBitmap(drawable.marker),
+            WaypointIconType.Pin to getBitmap(drawable.flag),
+            WaypointIconType.Cross to getBitmap(drawable.cross),
+
+            WaypointIconType.Circle to getBitmap(drawable.flag),
+            WaypointIconType.Triangle to getBitmap(drawable.triangle),
+            WaypointIconType.Square to getBitmap(drawable.flag),
+            WaypointIconType.Star to getBitmap(drawable.star),
+
+            WaypointIconType.QuestionMark to getBitmap(drawable.question_mark),
+            WaypointIconType.ExclamationPoint to getBitmap(drawable.exclamation_mark),
+            WaypointIconType.CheckMark to getBitmap(drawable.check_mark),
+            WaypointIconType.CrossMark to getBitmap(drawable.cross_mark),
+
+            WaypointIconType.Car to getBitmap(drawable.car),
+            WaypointIconType.Boat to getBitmap(drawable.boat),
+            WaypointIconType.Plane to getBitmap(drawable.plane),
+            WaypointIconType.Helicopter to getBitmap(drawable.helicopter),
+
+            WaypointIconType.Forest to getBitmap(drawable.forest),
+            WaypointIconType.Mountain to getBitmap(drawable.mountains),
+            WaypointIconType.Water to getBitmap(drawable.water),
+            WaypointIconType.Beach to getBitmap(drawable.beach),
+
+            WaypointIconType.Fire to getBitmap(drawable.fire),
+            WaypointIconType.Anchor to getBitmap(drawable.anchor),
+            WaypointIconType.Lifering to getBitmap(drawable.lifering),
+            WaypointIconType.Target to getBitmap(drawable.target),
+
+            WaypointIconType.Tent to getBitmap(drawable.tent),
+            WaypointIconType.House to getBitmap(drawable.house),
+            WaypointIconType.Building to getBitmap(drawable.building),
+            WaypointIconType.Castle to getBitmap(drawable.castle),
+        )
+    }
+
+    private fun getBitmap(drawable: Int): Bitmap {
+        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable))
     }
 
     override fun onDestroy() {
@@ -96,18 +146,18 @@ class MapActivity : ComponentActivity() {
     }
 
     private fun orangeMarker(): Bitmap {
-        return resizeBitmap(BitmapFactory.decodeResource(resources, R.drawable.marker_orange))
+        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable.marker_orange))
     }
 
     private fun blueMarker(): Bitmap {
-        return resizeBitmap(BitmapFactory.decodeResource(resources, R.drawable.marker_blue))
+        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable.marker_blue))
     }
 
     private fun greenMarker(): Bitmap {
-        return resizeBitmap(BitmapFactory.decodeResource(resources, R.drawable.marker_green))
+        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable.marker_green))
     }
 
     private fun resizeBitmap(bitmap: Bitmap): Bitmap {
-        return Bitmap.createScaledBitmap(bitmap, 50, 50, false)
+        return Bitmap.createScaledBitmap(bitmap, 70, 70, false)
     }
 }
