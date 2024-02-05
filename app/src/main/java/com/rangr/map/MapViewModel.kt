@@ -1,7 +1,9 @@
 package com.rangr.map
 
 import android.app.Application
-import android.graphics.Bitmap
+import android.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.*
 import androidx.room.Room
 import com.mapbox.geojson.Point
@@ -12,6 +14,7 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 import com.rangr.data.AppDatabase
 import com.rangr.map.models.*
 import com.rangr.map.repositories.WaypointsRepository
+import com.rangr.ui.theme.RangrGreen
 import kotlinx.coroutines.launch
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
@@ -62,10 +65,51 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             mapboxService.deleteAllWaypoints()
 
             waypointList.filterNotNull().forEach { waypoint ->
-                mapboxService.renderWaypoint(waypoint, markerFactory.getMarkerForType(waypoint.markerType))
+                val marker = markerFactory.getMarkerForType(waypoint.markerType)
+                val color = waypoint.getColor()
+                val newMarker = tintBitmap(marker, color)
+                mapboxService.renderWaypoint(waypoint, newMarker)
             }
         }
     }
+
+    fun tintBitmap(originalBitmap: Bitmap, color: Color): Bitmap {
+        // Create a mutable copy of the original bitmap
+        val tintedBitmap = Bitmap.createBitmap(originalBitmap.width, originalBitmap.height, originalBitmap.config)
+        val canvas = Canvas(tintedBitmap)
+        val paint = Paint()
+
+        // Convert androidx.compose.ui.graphics.Color to Android color int
+        val androidColorInt = android.graphics.Color.argb(
+            (color.alpha * 255).toInt(),
+            (color.red * 255).toInt(),
+            (color.green * 255).toInt(),
+            (color.blue * 255).toInt()
+        )
+
+        // Apply the color tint
+        paint.colorFilter = PorterDuffColorFilter(androidColorInt, PorterDuff.Mode.SRC_IN)
+
+        // Draw the original bitmap onto the new bitmap using the tinted paint
+        canvas.drawBitmap(originalBitmap, 0f, 0f, paint)
+
+        return tintedBitmap
+    }
+
+//    fun tintBitmap(originalBitmap: Bitmap, color: Int): Bitmap {
+//        // Create a mutable copy of the original bitmap
+//        val tintedBitmap = Bitmap.createBitmap(originalBitmap.width, originalBitmap.height, originalBitmap.config)
+//        val canvas = Canvas(tintedBitmap)
+//        val paint = Paint()
+//
+//        // Apply the color tint
+//        paint.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
+//
+//        // Draw the original bitmap onto the new bitmap using the tinted paint
+//        canvas.drawBitmap(originalBitmap, 0f, 0f, paint)
+//
+//        return tintedBitmap
+//    }
 
     private fun onWaypointTap(point: Point) {
         println("POINT TAPPED - ${point.latitude()}, ${point.longitude()}")
@@ -177,9 +221,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _mapboxService.deletePoint(_tapPointRef!!)
     }
 
-    suspend fun createWaypoint(lat: Double, lng: Double, name: String, markerType: WaypointIconType, desc: String) {
+    suspend fun createWaypoint(lat: Double, lng: Double, name: String, markerType: WaypointIconType, markerColor: Color, desc: String) {
         val pos = GeoPosition(lat, lng)
-        val wpt = Waypoint(name = name, position = pos, markerType = markerType, description = desc)
+        val wpt = Waypoint(name = name, position = pos, markerType = markerType, description = desc, markerColor = markerColor.toArgb().toLong())
 
         val marker = markerFactory.getMarkerForType(markerType)
 
