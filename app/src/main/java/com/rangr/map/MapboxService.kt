@@ -242,11 +242,20 @@ class MapboxService(mapView: MapView) {
         pointAnnotationManager.deleteAll()
     }
 
-    fun renderPoint(point: Point, bitmap: Bitmap): PointAnnotation {
+    fun renderPoint(point: Point, bitmap: Bitmap, background: Bitmap? = null): PointAnnotation {
         val pointAnnotationOptions: PointAnnotationOptions =
             PointAnnotationOptions().withPoint(point).withIconImage(bitmap)
 
-        return pointAnnotationManager.create(pointAnnotationOptions)
+        val result = pointAnnotationManager.create(pointAnnotationOptions)
+
+        if (background != null) {
+            val bg: PointAnnotationOptions =
+                PointAnnotationOptions().withPoint(point).withIconImage(bitmap)
+
+            pointAnnotationManager.create(bg)
+        }
+
+        return result
     }
 
     fun deletePoint(point: PointAnnotation) {
@@ -289,12 +298,21 @@ class MapboxService(mapView: MapView) {
         _mapView.gestures.removeOnMoveListener(onMoveListener)
     }
 
-    fun renderWaypoint(wpt: Waypoint, icon: Bitmap): PointAnnotation {
-        val point = Point.fromLngLat(wpt.longitude, wpt.latitude)
-        val pointAnnotationOptions: PointAnnotationOptions =
+    fun renderWaypoint(wpt: Waypoint, icon: Bitmap, background: Bitmap? = null): PointAnnotation {
+        val point = wpt.position.toPoint()
+        val pointAnnotationOptions =
             PointAnnotationOptions().withPoint(point).withIconImage(icon)
 
-        return pointAnnotationManager.create(pointAnnotationOptions)
+        val result = pointAnnotationManager.create(pointAnnotationOptions)
+
+        if (background != null) {
+            val bg: PointAnnotationOptions =
+                PointAnnotationOptions().withPoint(point).withIconImage(background)
+
+            pointAnnotationManager.create(bg)
+        }
+
+        return result
     }
 
     fun deleteAllWaypoints() {

@@ -2,6 +2,7 @@ package com.rangr.map.repositories
 
 import androidx.annotation.WorkerThread
 import com.rangr.data.dao.WaypointDao
+import com.rangr.map.models.GeoPosition
 import com.rangr.map.models.Waypoint
 import kotlinx.coroutines.flow.Flow
 
@@ -16,8 +17,8 @@ class WaypointsRepository(private val dao: WaypointDao) {
     }
 
     @WorkerThread
-    suspend fun getWaypointByLatLng(lat: Double, lng: Double): Waypoint? {
-        return dao.getByLatLng(lat, lng)
+    suspend fun getWaypointByPosition(pos: GeoPosition): Waypoint? {
+        return dao.getByPosition(pos)
     }
 
     val allWaypoints = dao.getAll()

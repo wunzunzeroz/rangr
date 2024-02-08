@@ -8,7 +8,7 @@ import com.rangr.map.MapViewModel
 
 @Composable
 fun TestScreen(model: MapViewModel) {
-   val waypoints = model.waypoints.observeAsState()
+    val waypoints = model.waypoints.observeAsState()
 
     if (waypoints.value == null) {
         return Text("No Waypoints")
@@ -18,8 +18,8 @@ fun TestScreen(model: MapViewModel) {
         Text("WAYPOINTS")
         waypoints.value!!.map {
             Text("Name: ${it?.name}")
-            Text("Lat: ${it?.latitude}")
-            Text("Lng: ${it?.longitude}")
+            Text("Lat: ${it?.position?.latLngDecimal?.latitude}")
+            Text("LNG: ${it?.position?.latLngDecimal?.longitude}")
             Text("Description: ${it?.description}")
         }
     }
