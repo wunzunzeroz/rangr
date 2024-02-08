@@ -68,7 +68,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 val marker = markerFactory.getMarkerForType(waypoint.markerType)
                 val color = waypoint.getColor()
                 val newMarker = tintBitmap(marker, color)
-                mapboxService.renderWaypoint(waypoint, newMarker)
+                val bg = tintBitmap(_waypointIcon, Color.Black)
+                mapboxService.renderWaypoint(waypoint, newMarker, bg)
             }
         }
     }

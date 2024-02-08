@@ -106,7 +106,7 @@ class MapActivity : ComponentActivity() {
     }
 
     private fun getBitmap(drawable: Int): Bitmap {
-        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable))
+        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable), 40)
     }
 
     override fun onDestroy() {
@@ -164,10 +164,10 @@ class MapActivity : ComponentActivity() {
     }
 
     private fun greenMarker(): Bitmap {
-        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable.marker_green))
+        return resizeBitmap(BitmapFactory.decodeResource(resources, drawable.marker_green), 60)
     }
 
-    private fun resizeBitmap(bitmap: Bitmap): Bitmap {
-        return Bitmap.createScaledBitmap(bitmap, 70, 70, false)
+    private fun resizeBitmap(bitmap: Bitmap, size: Int = 60): Bitmap {
+        return Bitmap.createScaledBitmap(bitmap, size, size, false)
     }
 }
